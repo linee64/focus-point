@@ -13,6 +13,7 @@ interface StoreState {
   addTask: (task: Omit<Task, 'id' | 'isCompleted'>) => void;
   toggleTask: (id: string) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
+  logout: () => void;
 }
 
 const mockTasks: Task[] = [
@@ -72,6 +73,8 @@ export const useStore = create<StoreState>()(
       updateSettings: (newSettings) => set((state) => ({
         settings: { ...state.settings, ...newSettings }
       })),
+
+      logout: () => set({ hasOnboarded: false }),
     }),
     {
       name: 'focuspoint-storage',

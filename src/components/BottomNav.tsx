@@ -13,7 +13,7 @@ export const BottomNav = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 w-full max-w-md bg-surface/95 backdrop-blur-md border-t border-white/10 pb-safe">
+    <nav className="fixed bottom-0 w-full max-w-md bg-surface/95 backdrop-blur-md border-t border-white/10 pb-safe z-50">
       <div className="flex justify-around items-center h-16">
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = location.pathname === path;

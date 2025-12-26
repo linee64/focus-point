@@ -1,6 +1,10 @@
 import { motion } from 'framer-motion';
+import { LogOut } from 'lucide-react';
+import { useStore } from '../store/useStore';
 
 export const Settings = () => {
+  const logout = useStore((state) => state.logout);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -25,6 +29,17 @@ export const Settings = () => {
             <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
           </div>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Аккаунт</h3>
+        <button 
+          onClick={logout}
+          className="w-full p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex justify-between items-center text-red-500 hover:bg-red-500/20 transition-colors"
+        >
+          <span className="font-medium">Выйти из аккаунта</span>
+          <LogOut size={20} />
+        </button>
       </div>
     </motion.div>
   );

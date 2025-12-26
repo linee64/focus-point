@@ -104,17 +104,14 @@ export const Dashboard = () => {
       className="space-y-6 relative"
     >
       {/* Header with Date Strip */}
-      <header className="space-y-4">
-        <div className="flex items-center justify-between">
+      <header className="space-y-8">
+        <div className="flex items-center gap-3 px-2 mt-5">
+          {/* Logo Placeholder */}
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-black to-primary border border-white/10 shadow-lg shadow-primary/20"></div>
+          
           <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-light to-secondary-light bg-clip-text text-transparent">
             FocusPoint
           </h1>
-          <button 
-            onClick={() => setIsCalendarOpen(true)}
-            className="p-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors"
-          >
-            <CalendarIcon size={20} className="text-primary-light" />
-          </button>
         </div>
 
         {/* Date Strip */}
@@ -133,7 +130,7 @@ export const Dashboard = () => {
                 )}
               >
                 <span className={clsx("text-[9px] uppercase font-bold", isSelected ? "text-white/80" : "text-gray-500")}>
-                  {format(date, 'EEE', { locale: ru })}
+                  {format(date, 'EEEEEE', { locale: ru })}
                 </span>
                 <span className={clsx("text-base font-bold", isSelected ? "text-white" : "text-gray-300")}>
                   {format(date, 'd')}
@@ -146,8 +143,16 @@ export const Dashboard = () => {
 
       {/* Timeline */}
       <div className="space-y-3 relative pb-20">
-        {/* Add Button */}
-        <div className="flex justify-end px-2">
+        {/* Actions Bar */}
+        <div className="flex justify-between items-center px-2">
+           <button 
+             onClick={() => setIsCalendarOpen(true)}
+             className="flex items-center gap-2 text-sm text-gray-400 font-medium hover:text-white transition-colors border border-white/10 px-3 py-1.5 rounded-lg bg-white/5"
+           >
+             <CalendarIcon size={16} />
+             <span>Календарь</span>
+           </button>
+
            <button className="flex items-center gap-2 text-sm text-primary-light font-medium bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">
              <Plus size={16} />
              Добавить пункт

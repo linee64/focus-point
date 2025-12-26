@@ -22,3 +22,8 @@
     - Added "Edit" (pencil) and "Complete" (check) mini-buttons to each schedule item on the Dashboard.
     - Changed date strip to show current week (Mon-Sun).
     - Added "Add Schedule Item" button.
+- **Dashboard Refinements**:
+    - Fixed BottomNav z-index.
+    - Updated date format to short day names (ПН, ВТ...).
+    - Added logo placeholder (gradient circle) next to title.
+    - Moved Calendar button to the actions bar below the date strip.
