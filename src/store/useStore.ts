@@ -10,6 +10,8 @@ interface StoreState {
   settings: UserSettings;
   
   completeOnboarding: () => void;
+  updateUser: (name: string, surname: string) => void;
+  addScheduleEvent: (event: Omit<ScheduleEvent, 'id'>) => void;
   addTask: (task: Omit<Task, 'id' | 'isCompleted'>) => void;
   toggleTask: (id: string) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
@@ -56,11 +58,17 @@ export const useStore = create<StoreState>()(
       settings: {
         wakeUpTime: '07:00',
         bedTime: '23:00',
+        breakfastTime: '07:30',
+        lunchTime: '13:00',
+        dinnerTime: '19:00',
         schoolStart: '08:00',
         schoolEnd: '14:00',
       },
+      user: null,
 
       completeOnboarding: () => set({ hasOnboarded: true }),
+
+      updateUser: (name, surname) => set({ user: { name, surname } }),
 
       addTask: (task) => set((state) => ({
         tasks: [...state.tasks, { ...task, id: Math.random().toString(36).substr(2, 9), isCompleted: false }]

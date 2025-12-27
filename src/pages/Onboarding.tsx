@@ -1,7 +1,135 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { ChevronRight, ArrowLeft, Check, Eye, EyeOff } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Check, Eye, EyeOff, Plus, Trash2, Clock, X, Upload, Image as ImageIcon } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { clsx } from 'clsx';
+
+// Custom Time Picker Component
+const TimePicker = ({ 
+  value, 
+  onChange, 
+  label 
+}: { 
+  value: string, 
+  onChange: (val: string) => void,
+  label: string 
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedHour, setSelectedHour] = useState(value ? parseInt(value.split(':')[0]) : 12);
+  const [selectedMinute, setSelectedMinute] = useState(value ? parseInt(value.split(':')[1]) : 0);
+
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const minutes = Array.from({ length: 60 }, (_, i) => i);
+
+  useEffect(() => {
+    if (value) {
+      const [h, m] = value.split(':').map(Number);
+      setSelectedHour(h);
+      setSelectedMinute(m);
+    }
+  }, [value]);
+
+  const handleSave = () => {
+    const timeStr = `${selectedHour.toString().padStart(2, '0')}:${selectedMinute.toString().padStart(2, '0')}`;
+    onChange(timeStr);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative">
+      <label className="text-sm text-gray-400 ml-1 mb-2 block">{label}</label>
+      <button 
+        onClick={() => setIsOpen(true)}
+        className="w-full bg-surface/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-4 text-white text-left flex items-center justify-between hover:bg-white/5 transition-colors"
+      >
+        <span className={!value ? "text-gray-500" : "text-white"}>
+          {value || "--:--"}
+        </span>
+        <Clock size={20} className="text-gray-400" />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm"
+              onClick={() => setIsOpen(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="fixed inset-x-4 top-[20%] z-50 bg-[#1A1A1A] border border-white/10 rounded-2xl p-6 shadow-2xl max-w-sm mx-auto"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold">Выберите время</h3>
+                <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-white/10 rounded-full">
+                  <X size={20} className="text-gray-400" />
+                </button>
+              </div>
+
+              <div className="flex justify-center gap-4 h-48 mb-6">
+                {/* Hours */}
+                <div className="flex flex-col items-center">
+                  <span className="text-xs text-gray-400 mb-2 font-medium">ЧАСЫ</span>
+                  <div className="w-20 h-full overflow-y-auto scrollbar-hide snap-y snap-mandatory bg-white/5 rounded-xl border border-white/5">
+                    <div className="h-[40%]"></div>
+                    {hours.map(h => (
+                      <div 
+                        key={h}
+                        onClick={() => setSelectedHour(h)}
+                        className={clsx(
+                          "h-10 flex items-center justify-center snap-center cursor-pointer transition-colors font-mono text-xl",
+                          selectedHour === h ? "bg-primary text-white font-bold" : "text-gray-400 hover:bg-white/5"
+                        )}
+                      >
+                        {h.toString().padStart(2, '0')}
+                      </div>
+                    ))}
+                    <div className="h-[40%]"></div>
+                  </div>
+                </div>
+
+                <div className="h-full flex items-center text-2xl font-bold text-gray-600 pb-6">:</div>
+
+                {/* Minutes */}
+                <div className="flex flex-col items-center">
+                  <span className="text-xs text-gray-400 mb-2 font-medium">МИНУТЫ</span>
+                  <div className="w-20 h-full overflow-y-auto scrollbar-hide snap-y snap-mandatory bg-white/5 rounded-xl border border-white/5">
+                    <div className="h-[40%]"></div>
+                    {minutes.map(m => (
+                      <div 
+                        key={m}
+                        onClick={() => setSelectedMinute(m)}
+                        className={clsx(
+                          "h-10 flex items-center justify-center snap-center cursor-pointer transition-colors font-mono text-xl",
+                          selectedMinute === m ? "bg-primary text-white font-bold" : "text-gray-400 hover:bg-white/5"
+                        )}
+                      >
+                        {m.toString().padStart(2, '0')}
+                      </div>
+                    ))}
+                    <div className="h-[40%]"></div>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                onClick={handleSave}
+                className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-xl transition-colors"
+              >
+                Готово
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const slides = [
   {
@@ -26,7 +154,7 @@ const slides = [
 
 export const Onboarding = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [view, setView] = useState<'carousel' | 'register' | 'login'>('carousel');
+  const [view, setView] = useState<'carousel' | 'register' | 'login' | 'name-input' | 'activity-input' | 'step-3' | 'daily-routine'>('carousel');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isEmailValid, setIsEmailValid] = useState(false);
@@ -44,7 +172,53 @@ export const Onboarding = () => {
   const [loginShakeButton, setLoginShakeButton] = useState(false);
   const [loginError, setLoginError] = useState(false);
 
+  // Name input specific states
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [schoolShift, setSchoolShift] = useState<'1' | '2' | null>(null);
+  const [schoolStartTime, setSchoolStartTime] = useState('08:00');
+  const [schoolEndTime, setSchoolEndTime] = useState('14:00');
+
+  // Activity input specific states
+  const [activityName, setActivityName] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [activities, setActivities] = useState<Array<{title: string, startTime: string, endTime: string}>>([]);
+
+  // Schedule upload state
+  const [scheduleImage, setScheduleImage] = useState<string | null>(null);
+
+  // Daily routine state
+  const [wakeUpTime, setWakeUpTime] = useState('07:00');
+  const [breakfastTime, setBreakfastTime] = useState('07:30');
+  const [lunchTime, setLunchTime] = useState('13:00');
+  const [dinnerTime, setDinnerTime] = useState('19:00');
+  const [bedTime, setBedTime] = useState('23:00');
+
   const completeOnboarding = useStore((state) => state.completeOnboarding);
+  const updateUser = useStore((state) => state.updateUser);
+  const addScheduleEvent = useStore((state) => state.addScheduleEvent);
+  const updateSettings = useStore((state) => state.updateSettings);
+
+  const getStepInfo = () => {
+    switch (view) {
+      case 'name-input': return { step: 1, total: 5 };
+      case 'activity-input': return { step: 2, total: 5 };
+      case 'step-3': return { step: 3, total: 5 };
+      case 'daily-routine': return { step: 4, total: 5 };
+      case 'completion': return { step: 5, total: 5 };
+      default: return null;
+    }
+  };
+
+  const handleBack = () => {
+    switch (view) {
+      case 'name-input': setView('register'); break;
+      case 'activity-input': setView('name-input'); break;
+      case 'step-3': setView('activity-input'); break;
+      case 'daily-routine': setView('step-3'); break;
+    }
+  };
 
   useEffect(() => {
     // Only allow English letters, numbers, dots, underscores, hyphens before @
@@ -91,12 +265,66 @@ export const Onboarding = () => {
 
   const handleCreateAccount = () => {
     if (isEmailValid && isPasswordValid) {
-      completeOnboarding();
+      setView('name-input');
     } else {
       setShakeButton(true);
       if (!isPasswordValid) setShowPasswordError(true);
       setTimeout(() => setShakeButton(false), 500);
     }
+  };
+
+  const handleNameSubmit = () => {
+    if (firstName && lastName && schoolShift) {
+      updateUser(firstName, lastName);
+      // We can also save school settings here if needed, or later
+      updateSettings({
+        schoolStart: schoolStartTime,
+        schoolEnd: schoolEndTime
+      });
+      setView('activity-input');
+    }
+  };
+
+  const handleAddActivity = () => {
+    if (activityName && startTime && endTime) {
+      setActivities([...activities, { title: activityName, startTime, endTime }]);
+      setActivityName('');
+      setStartTime('');
+      setEndTime('');
+    }
+  };
+
+  const handleRemoveActivity = (index: number) => {
+    setActivities(activities.filter((_, i) => i !== index));
+  };
+
+  const handleCompleteOnboarding = () => {
+    // Add all collected activities to the store
+    activities.forEach(activity => {
+      addScheduleEvent({
+        title: activity.title,
+        startTime: activity.startTime,
+        endTime: activity.endTime,
+        type: 'activity'
+      });
+    });
+    // Go to step 3 instead of completing immediately
+    setView('step-3');
+  };
+
+  const handleCompleteDailyRoutine = () => {
+    updateSettings({
+      wakeUpTime,
+      breakfastTime,
+      lunchTime,
+      dinnerTime,
+      bedTime
+    });
+    setView('completion');
+  };
+
+  const handleFinishOnboarding = () => {
+    completeOnboarding();
   };
 
   const handleLogin = () => {
@@ -107,6 +335,17 @@ export const Onboarding = () => {
         setLoginShakeButton(true);
         setLoginError(true);
         setTimeout(() => setLoginShakeButton(false), 500);
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setScheduleImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -169,7 +408,7 @@ export const Onboarding = () => {
               onClick={() => setView('register')}
               className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-colors text-lg"
             >
-              Регистрация
+              Зарегистрироваться
             </button>
             <button 
               onClick={() => setView('login')}
@@ -331,6 +570,13 @@ export const Onboarding = () => {
                     </p>
                   </div>
 
+                  <div className="text-sm text-gray-400 leading-relaxed text-center">
+                    Нажимая «Создать аккаунт», вы соглашаетесь с нашей{' '}
+                    <a href="#" className="text-primary hover:underline">Политикой конфиденциальности</a>
+                    {' '}и{' '}
+                    <a href="#" className="text-primary hover:underline">Условиями использования</a>
+                  </div>
+
                   <motion.button
                     onClick={handleCreateAccount}
                     animate={shakeButton ? { x: [-20, 20, -20, 20, -10, 10, 0] } : {}}
@@ -472,11 +718,511 @@ export const Onboarding = () => {
     </div>
   );
 
+  const renderProgressBar = () => {
+    const info = getStepInfo();
+    if (!info) return null;
+
+    const totalSteps = info.total;
+    const currentStep = info.step;
+
+    return (
+      <div className="absolute bottom-8 left-4 right-4 z-30 flex items-center justify-between">
+        {Array.from({ length: totalSteps }).map((_, index) => {
+          const stepNum = index + 1;
+          const isActive = stepNum <= currentStep;
+          const isCompleted = stepNum < currentStep;
+
+          return (
+            <div 
+                key={index} 
+                className={clsx(
+                    "flex items-center", 
+                    index === totalSteps - 1 ? "flex-none" : "flex-1"
+                )}
+            >
+              {/* Circle */}
+              <motion.div 
+                animate={{
+                    backgroundColor: isActive ? "#8b5cf6" : "rgba(255,255,255,0.1)", // purple-500 or white/10
+                    scale: isActive ? 1.1 : 1,
+                    borderColor: isActive ? "#8b5cf6" : "rgba(255,255,255,0.2)"
+                }}
+                className={clsx(
+                    "w-3 h-3 rounded-full border transition-colors duration-300 flex-shrink-0 z-10",
+                    // isActive ? "bg-primary border-primary" : "bg-white/10 border-white/20" // handled by motion
+                )}
+              />
+              
+              {/* Line (after the circle) */}
+              {index < totalSteps - 1 && (
+                <div className="flex-1 h-[2px] mx-0 bg-white/10 relative w-full overflow-hidden">
+                    <motion.div 
+                        initial={{ width: "0%" }}
+                        animate={{ width: isCompleted ? "100%" : "0%" }}
+                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                        className="absolute inset-y-0 left-0 bg-primary"
+                    />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderNameInput = () => (
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-black/80 z-10" />
+        <img 
+          src="https://i.pinimg.com/736x/0f/df/48/0fdf484ccf80ea3301e22e815866f44b.jpg" 
+          alt="Background" 
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      <button 
+        onClick={handleBack}
+        className="absolute top-8 left-4 p-2 rounded-full hover:bg-white/10 transition-colors z-20"
+      >
+        <ArrowLeft size={24} className="text-white" />
+      </button>
+
+      <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full z-20 relative pb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-8"
+        >
+          <div className="space-y-2 text-center">
+            <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-white">
+              Расскажите о себе
+            </h2>
+            <p className="text-gray-300 text-lg">
+              Как к вам обращаться?
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm text-gray-400 ml-1">Имя</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Ваше имя"
+                className="w-full bg-surface/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm text-gray-400 ml-1">Фамилия</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Ваша фамилия"
+                className="w-full bg-surface/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+
+            {/* School Shift Selection */}
+            <div className="space-y-3 pt-2">
+              <label className="text-sm text-gray-400 ml-1">Смена в школе</label>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => {
+                    setSchoolShift('1');
+                    setSchoolStartTime('08:00');
+                    setSchoolEndTime('14:00');
+                  }}
+                  className={clsx(
+                    "flex-1 py-3 rounded-xl border transition-all font-medium",
+                    schoolShift === '1' 
+                      ? "bg-primary text-white border-primary" 
+                      : "bg-surface/50 border-white/10 text-gray-400 hover:bg-white/5"
+                  )}
+                >
+                  1 смена
+                </button>
+                <button
+                  onClick={() => {
+                    setSchoolShift('2');
+                    setSchoolStartTime('14:00');
+                    setSchoolEndTime('19:00');
+                  }}
+                  className={clsx(
+                    "flex-1 py-3 rounded-xl border transition-all font-medium",
+                    schoolShift === '2' 
+                      ? "bg-primary text-white border-primary" 
+                      : "bg-surface/50 border-white/10 text-gray-400 hover:bg-white/5"
+                  )}
+                >
+                  2 смена
+                </button>
+              </div>
+            </div>
+
+            {/* School Hours */}
+            <AnimatePresence>
+                {schoolShift && (
+                    <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="space-y-2 overflow-hidden"
+                    >
+                         <div className="flex gap-4">
+                            <div className="flex-1">
+                                <TimePicker 
+                                label="Начало уроков" 
+                                value={schoolStartTime} 
+                                onChange={setSchoolStartTime} 
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <TimePicker 
+                                label="Конец уроков" 
+                                value={schoolEndTime} 
+                                onChange={setSchoolEndTime} 
+                                />
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <button
+              onClick={handleNameSubmit}
+              disabled={!firstName || !lastName || !schoolShift}
+              className="w-full bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-all text-lg mt-4"
+            >
+              Далее
+            </button>
+          </div>
+        </motion.div>
+      </div>
+      {renderProgressBar()}
+    </div>
+  );
+
+  const renderActivityInput = () => (
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden">
+      {/* Background Video */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-purple-900/80 mix-blend-multiply z-20" />
+        <div className="absolute inset-0 bg-purple-600/50 mix-blend-color z-20" />
+        <div className="absolute inset-0 bg-purple-500/30 mix-blend-overlay z-20" />
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+          className="w-full h-full object-cover grayscale"
+        >
+          <source src="https://videos.pexels.com/video-files/3129671/3129671-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+        </video>
+      </div>
+
+      <button 
+        onClick={handleBack}
+        className="absolute top-8 left-4 p-2 rounded-full hover:bg-white/10 transition-colors z-20"
+      >
+        <ArrowLeft size={24} className="text-white" />
+      </button>
+
+      <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full z-20 relative pb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <div className="space-y-2 text-center">
+            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-white">
+              Ваше расписание
+            </h2>
+            <p className="text-gray-300 text-lg">
+              Добавьте кружки, секции, курсы или куда уходит часть вашего времени
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm text-gray-400 ml-1">Название активности</label>
+              <input
+                type="text"
+                value={activityName}
+                onChange={(e) => setActivityName(e.target.value)}
+                placeholder="Например: Подготовка к IELTS"
+                className="w-full bg-surface/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <TimePicker 
+                  label="Начало" 
+                  value={startTime} 
+                  onChange={setStartTime} 
+                />
+              </div>
+              <div className="flex-1">
+                <TimePicker 
+                  label="Конец" 
+                  value={endTime} 
+                  onChange={setEndTime} 
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleAddActivity}
+              disabled={!activityName || !startTime || !endTime}
+              className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Plus size={20} />
+              Добавить
+            </button>
+          </div>
+
+          {/* Activity List */}
+          <div className="space-y-2 max-h-[200px] overflow-y-auto scrollbar-hide">
+            <AnimatePresence>
+                {activities.map((activity, index) => (
+                    <motion.div
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        className="flex justify-between items-center p-4 rounded-xl bg-surface/50 backdrop-blur-sm border border-white/10"
+                    >
+                        <div>
+                            <div className="font-medium text-white">{activity.title}</div>
+                            <div className="text-sm text-gray-400">{activity.startTime} - {activity.endTime}</div>
+                        </div>
+                        <button 
+                            onClick={() => handleRemoveActivity(index)}
+                            className="text-gray-400 hover:text-red-500 transition-colors p-2"
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                    </motion.div>
+                ))}
+            </AnimatePresence>
+          </div>
+
+          <button
+            onClick={handleCompleteOnboarding}
+            className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg mt-4"
+          >
+            Далее
+          </button>
+        </motion.div>
+      </div>
+      {renderProgressBar()}
+    </div>
+  );
+
+  const renderStep3 = () => (
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden items-center justify-center">
+        {/* Background Video */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-purple-900/80 mix-blend-multiply z-20" />
+        <div className="absolute inset-0 bg-purple-600/50 mix-blend-color z-20" />
+        <div className="absolute inset-0 bg-purple-500/30 mix-blend-overlay z-20" />
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+          className="w-full h-full object-cover grayscale"
+        >
+          <source src="https://videos.pexels.com/video-files/3129671/3129671-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+        </video>
+      </div>
+
+      <button 
+        onClick={handleBack}
+        className="absolute top-8 left-4 p-2 rounded-full hover:bg-white/10 transition-colors z-20"
+      >
+        <ArrowLeft size={24} className="text-white" />
+      </button>
+      
+      <div className="relative z-20 w-full max-w-md flex flex-col h-full pb-20">
+          <div className="text-center mb-8 mt-auto">
+            <h2 className="text-3xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-white">
+                Загрузите расписание
+            </h2>
+            <p className="text-gray-300 text-sm leading-relaxed">
+                Сфотографируйте или загрузите скриншот вашего расписания на неделю. ИИ распознает его автоматически.
+            </p>
+          </div>
+
+          <div className="flex-1 flex flex-col justify-center items-center mb-8">
+            <AnimatePresence mode="wait">
+                {!scheduleImage ? (
+                    <motion.label 
+                        key="upload"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="w-full aspect-[4/3] rounded-2xl border-2 border-dashed border-white/20 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer flex flex-col items-center justify-center gap-4 group"
+                    >
+                        <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Upload className="text-white w-8 h-8" />
+                        </div>
+                        <span className="text-gray-400 font-medium group-hover:text-white transition-colors">
+                            Нажмите, чтобы загрузить
+                        </span>
+                        <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={handleImageUpload}
+                        />
+                    </motion.label>
+                ) : (
+                    <motion.div 
+                        key="preview"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="w-full aspect-[4/3] rounded-2xl overflow-hidden relative group border border-white/20"
+                    >
+                        <img 
+                            src={scheduleImage} 
+                            alt="Schedule Preview" 
+                            className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button 
+                                onClick={() => setScheduleImage(null)}
+                                className="bg-red-500/80 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors flex items-center gap-2"
+                            >
+                                <Trash2 size={16} />
+                                Удалить
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+          </div>
+
+          <button 
+            onClick={() => setView('daily-routine')}
+            className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg mb-8 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!scheduleImage}
+          >
+            Далее
+          </button>
+      </div>
+      {renderProgressBar()}
+    </div>
+  );
+
+  const renderDailyRoutine = () => (
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden items-center justify-center">
+      {/* Background Video */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-purple-900/80 mix-blend-multiply z-20" />
+        <div className="absolute inset-0 bg-purple-600/50 mix-blend-color z-20" />
+        <div className="absolute inset-0 bg-purple-500/30 mix-blend-overlay z-20" />
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+          className="w-full h-full object-cover grayscale"
+        >
+          <source src="https://videos.pexels.com/video-files/3129671/3129671-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+        </video>
+      </div>
+
+      <button 
+        onClick={handleBack}
+        className="absolute top-8 left-4 p-2 rounded-full hover:bg-white/10 transition-colors z-20"
+      >
+        <ArrowLeft size={24} className="text-white" />
+      </button>
+
+      <div className="relative z-20 w-full max-w-md flex flex-col h-full pb-20">
+        <div className="text-center mb-6 mt-auto">
+          <h2 className="text-3xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-white">
+              Ваш режим дня
+          </h2>
+          <p className="text-gray-300 text-sm leading-relaxed">
+              Настройте время для основных событий дня
+          </p>
+        </div>
+
+        <div className="flex-1 flex flex-col justify-center space-y-4 mb-8 overflow-y-auto scrollbar-hide">
+            <TimePicker label="Подъем" value={wakeUpTime} onChange={setWakeUpTime} />
+            <TimePicker label="Завтрак" value={breakfastTime} onChange={setBreakfastTime} />
+            <TimePicker label="Обед" value={lunchTime} onChange={setLunchTime} />
+            <TimePicker label="Ужин" value={dinnerTime} onChange={setDinnerTime} />
+            <TimePicker label="Сон" value={bedTime} onChange={setBedTime} />
+        </div>
+
+        <button 
+          onClick={handleCompleteDailyRoutine}
+          className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg mb-8"
+        >
+          Далее
+        </button>
+      </div>
+      {renderProgressBar()}
+    </div>
+  );
+
+  const renderCompletion = () => (
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden items-center justify-center text-center">
+      {/* Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-20%] right-[-20%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[-20%] left-[-20%] w-[500px] h-[500px] bg-secondary/20 rounded-full blur-[100px]" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="z-10 w-full max-w-sm space-y-8 flex flex-col items-center"
+      >
+        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/30 mb-4">
+          <Check size={48} className="text-white" />
+        </div>
+        
+        <div className="space-y-4">
+          <h2 className="text-3xl font-bold text-white">Готово!</h2>
+          <p className="text-gray-300 text-lg">
+            Регистрация успешно завершена. <br/>
+            Твой персональный план готов.
+          </p>
+          <p className="text-gray-400 text-sm max-w-xs mx-auto mt-2">
+            От тебя нужно лишь записывать домашнее задание и заранее сообщать о предстоящих экзаменах, СОР/СОЧ.
+          </p>
+        </div>
+
+        <button 
+          onClick={handleFinishOnboarding}
+          className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg shadow-lg shadow-primary/20 mt-8"
+        >
+          Приступить
+        </button>
+      </motion.div>
+      {renderProgressBar()}
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
       {view === 'carousel' && renderCarousel()}
       {view === 'register' && renderRegister()}
       {view === 'login' && renderLogin()}
+      {view === 'name-input' && renderNameInput()}
+      {view === 'activity-input' && renderActivityInput()}
+      {view === 'step-3' && renderStep3()}
+      {view === 'daily-routine' && renderDailyRoutine()}
+      {view === 'completion' && renderCompletion()}
     </div>
   );
 };

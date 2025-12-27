@@ -22,6 +22,9 @@ export interface ScheduleEvent {
 export interface UserSettings {
   wakeUpTime: string;
   bedTime: string;
+  breakfastTime: string;
+  lunchTime: string;
+  dinnerTime: string;
   schoolStart: string;
   schoolEnd: string;
 }
