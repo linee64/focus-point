@@ -110,7 +110,7 @@ export const Dashboard = () => {
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-black to-primary border border-white/10 shadow-lg shadow-primary/20"></div>
           
           <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-light to-secondary-light bg-clip-text text-transparent">
-            FocusPoint
+            SleamAI
           </h1>
         </div>
 

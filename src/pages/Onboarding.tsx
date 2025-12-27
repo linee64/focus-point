@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ArrowLeft, Check } from 'lucide-react';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { ChevronRight, ArrowLeft, Check, Eye, EyeOff } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 const slides = [
@@ -32,17 +32,41 @@ export const Onboarding = () => {
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [showPasswordInput, setShowPasswordInput] = useState(false);
   const [isPasswordValid, setIsPasswordValid] = useState(false);
+  const [shakeButton, setShakeButton] = useState(false);
+  const [showPasswordError, setShowPasswordError] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
+  // Login specific states
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [isLoginEmailValid, setIsLoginEmailValid] = useState(false);
+  const [showLoginPasswordInput, setShowLoginPasswordInput] = useState(false);
+  const [loginShakeButton, setLoginShakeButton] = useState(false);
+  const [loginError, setLoginError] = useState(false);
+
   const completeOnboarding = useStore((state) => state.completeOnboarding);
 
   useEffect(() => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Only allow English letters, numbers, dots, underscores, hyphens before @
+    // Only allow English letters, numbers, dots, hyphens after @
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     setIsEmailValid(emailRegex.test(email));
   }, [email]);
 
   useEffect(() => {
-    const passRegex = /^[a-zA-Z0-9_{}()\[\]!@#$%^&*+=<>?|~`.-]+$/;
-    setIsPasswordValid(password.length >= 8 && passRegex.test(password));
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    setIsLoginEmailValid(emailRegex.test(loginEmail));
+  }, [loginEmail]);
+
+  useEffect(() => {
+    // Must contain English letters AND numbers. Special chars optional. Min 6 chars.
+    const hasLetters = /[a-zA-Z]/.test(password);
+    const hasNumbers = /[0-9]/.test(password);
+    const validChars = /^[a-zA-Z0-9_{}()\[\]!@#$%^&*+=<>?|~`.-]+$/.test(password);
+    
+    const isValid = password.length >= 6 && hasLetters && hasNumbers && validChars;
+    setIsPasswordValid(isValid);
+    if (isValid) setShowPasswordError(false);
   }, [password]);
 
   const handleNext = () => {
@@ -51,9 +75,38 @@ export const Onboarding = () => {
     }
   };
 
+  const handlePrev = () => {
+    if (currentSlide > 0) {
+      setCurrentSlide(curr => curr - 1);
+    }
+  };
+
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (info.offset.x < -50) {
+      handleNext();
+    } else if (info.offset.x > 50) {
+      handlePrev();
+    }
+  };
+
   const handleCreateAccount = () => {
     if (isEmailValid && isPasswordValid) {
       completeOnboarding();
+    } else {
+      setShakeButton(true);
+      if (!isPasswordValid) setShowPasswordError(true);
+      setTimeout(() => setShakeButton(false), 500);
+    }
+  };
+
+  const handleLogin = () => {
+    // Fake login validation
+    if (loginPassword.length >= 6) {
+        completeOnboarding();
+    } else {
+        setLoginShakeButton(true);
+        setLoginError(true);
+        setTimeout(() => setLoginShakeButton(false), 500);
     }
   };
 
@@ -67,7 +120,11 @@ export const Onboarding = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.3 }}
-            className="absolute inset-0 flex flex-col"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={handleDragEnd}
+            className="absolute inset-0 flex flex-col cursor-grab active:cursor-grabbing"
           >
             {/* Image Container */}
             <div className="h-[60%] w-full relative">
@@ -120,6 +177,19 @@ export const Onboarding = () => {
             >
               Войти
             </button>
+
+            <div className="relative flex items-center gap-4 py-1">
+                <div className="flex-1 h-[1px] bg-white/10"></div>
+                <span className="text-gray-500 text-sm">или</span>
+                <div className="flex-1 h-[1px] bg-white/10"></div>
+            </div>
+
+            <button 
+                className="w-full bg-white text-gray-700 font-semibold py-4 rounded-xl transition-colors hover:bg-gray-100 flex items-center justify-center gap-3"
+            >
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" />
+                Войти через Google
+            </button>
           </div>
         ) : (
           <button 
@@ -139,7 +209,7 @@ export const Onboarding = () => {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/80 z-10" />
         <img 
-          src="https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop" 
+          src="https://i.pinimg.com/736x/0f/df/48/0fdf484ccf80ea3301e22e815866f44b.jpg" 
           alt="Background" 
           className="w-full h-full object-cover"
         />
@@ -166,7 +236,7 @@ export const Onboarding = () => {
               Добро пожаловать
             </h2>
             <p className="text-gray-300 text-lg">
-              Начни свой путь вместе с FocusPoint
+              Начни свой путь вместе с SleamAI
             </p>
           </div>
 
@@ -184,10 +254,11 @@ export const Onboarding = () => {
                 <AnimatePresence>
                   {isEmailValid && (
                     <motion.div
+                      key="email-valid"
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0, opacity: 0 }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"
+                      className="absolute right-4 top-5 -translate-y-1/2 text-green-500"
                     >
                       <Check size={20} />
                     </motion.div>
@@ -225,37 +296,49 @@ export const Onboarding = () => {
                     <label className="text-sm text-gray-400 ml-1">Пароль</label>
                     <div className="relative">
                       <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Минимум 8 символов..."
-                        className="w-full bg-surface/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors pr-12"
+                        placeholder="Минимум 6 символов..."
+                        className={`w-full bg-surface/50 backdrop-blur-sm border rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none transition-colors pr-20 ${
+                          showPasswordError ? 'border-red-500' : 'border-white/10 focus:border-primary'
+                        }`}
                       />
-                      <AnimatePresence>
-                        {isPasswordValid && (
-                          <motion.div
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0, opacity: 0 }}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"
-                          >
-                            <Check size={20} />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                         <button
+                           onClick={() => setShowPassword(!showPassword)}
+                           className="text-gray-400 hover:text-white transition-colors"
+                         >
+                           {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                         </button>
+                        <AnimatePresence>
+                          {isPasswordValid && (
+                            <motion.div
+                              key="pass-valid"
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0, opacity: 0 }}
+                              className="text-green-500"
+                            >
+                              <Check size={20} />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-400 ml-1">
-                      Только английские буквы, цифры и спецсимволы
+                    <p className={`text-xs ml-1 transition-colors ${showPasswordError ? 'text-red-500' : 'text-gray-400'}`}>
+                      Латинские буквы и цифры обязательно. Спецсимволы опционально.
                     </p>
                   </div>
 
-                  <button
+                  <motion.button
                     onClick={handleCreateAccount}
-                    disabled={!isPasswordValid}
-                    className="w-full bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-all text-lg"
+                    animate={shakeButton ? { x: [-20, 20, -20, 20, -10, 10, 0] } : {}}
+                    transition={{ duration: 0.4 }}
+                    className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg"
                   >
                     Создать аккаунт
-                  </button>
+                  </motion.button>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -266,53 +349,123 @@ export const Onboarding = () => {
   );
 
   const renderLogin = () => (
-    <div className="flex-1 flex flex-col p-8 pt-12 relative">
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-black/80 z-10" />
+        <img 
+          src="https://i.pinimg.com/736x/0f/df/48/0fdf484ccf80ea3301e22e815866f44b.jpg" 
+          alt="Background" 
+          className="w-full h-full object-cover"
+        />
+      </div>
+
       <button 
         onClick={() => setView('carousel')}
-        className="absolute top-8 left-8 p-2 rounded-full hover:bg-white/10 transition-colors"
+        className="absolute top-8 left-8 p-2 rounded-full hover:bg-white/10 transition-colors z-20"
       >
         <ArrowLeft size={24} className="text-white" />
       </button>
 
-      <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
+      <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full z-20 relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
         >
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold text-white">
+          <div className="space-y-2 text-center">
+            <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-white">
               С возвращением!
             </h2>
-            <p className="text-gray-400">
+            <p className="text-gray-300 text-lg">
               Войдите, чтобы продолжить
             </p>
           </div>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
+          <div className="space-y-6">
+            <div className="space-y-2 relative">
               <label className="text-sm text-gray-400 ml-1">Email</label>
-              <input
-                type="email"
-                placeholder="name@example.com"
-                className="w-full bg-surface border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-gray-400 ml-1">Пароль</label>
-              <input
-                type="password"
-                placeholder="Введите пароль"
-                className="w-full bg-surface border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
-              />
+              <div className="relative">
+                 <input
+                  type="email"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  className="w-full bg-surface/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                />
+                <AnimatePresence>
+                  {isLoginEmailValid && (
+                    <motion.div
+                      key="login-email-valid"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      className="absolute right-4 top-5 -translate-y-1/2 text-green-500"
+                    >
+                      <Check size={20} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
-            <button
-              onClick={completeOnboarding}
-              className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg mt-4"
-            >
-              Войти
-            </button>
+            {!showLoginPasswordInput && (
+                <button
+                    onClick={() => isLoginEmailValid && setShowLoginPasswordInput(true)}
+                    disabled={!isLoginEmailValid}
+                    className="w-full bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-all text-lg"
+                >
+                    Далее
+                </button>
+            )}
+
+            <AnimatePresence>
+                {showLoginPasswordInput && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0, y: -20 }}
+                        animate={{ opacity: 1, height: 'auto', y: 0 }}
+                        className="space-y-6 overflow-hidden"
+                    >
+                        <div className="space-y-2">
+                          <label className="text-sm text-gray-400 ml-1">Пароль</label>
+                          <div className="relative">
+                            <input
+                              type={showPassword ? "text" : "password"}
+                              value={loginPassword}
+                              onChange={(e) => {
+                                  setLoginPassword(e.target.value);
+                                  setLoginError(false);
+                              }}
+                              placeholder="Введите пароль"
+                              className={`w-full bg-surface/50 backdrop-blur-sm border rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none transition-colors pr-12 ${
+                                loginError ? 'border-red-500' : 'border-white/10 focus:border-primary'
+                              }`}
+                            />
+                            <button
+                               onClick={() => setShowPassword(!showPassword)}
+                               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                             >
+                               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                             </button>
+                          </div>
+                          {loginError && (
+                              <p className="text-xs text-red-500 ml-1">
+                                  Неверный пароль
+                              </p>
+                          )}
+                        </div>
+
+                        <motion.button
+                          onClick={handleLogin}
+                          animate={loginShakeButton ? { x: [-20, 20, -20, 20, -10, 10, 0] } : {}}
+                          transition={{ duration: 0.4 }}
+                          className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg mt-4"
+                        >
+                          Войти
+                        </motion.button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
           </div>
         </motion.div>
       </div>
