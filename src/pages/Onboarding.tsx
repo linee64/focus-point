@@ -444,7 +444,7 @@ export const Onboarding = () => {
 
   const renderRegister = () => (
     <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden">
-      {/* Background Image */}
+      {/* Background Video */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/80 z-10" />
         <img 
@@ -773,14 +773,21 @@ export const Onboarding = () => {
 
   const renderNameInput = () => (
     <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden">
-      {/* Background Image */}
+      {/* Background Video */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-black/80 z-10" />
-        <img 
-          src="https://i.pinimg.com/736x/0f/df/48/0fdf484ccf80ea3301e22e815866f44b.jpg" 
-          alt="Background" 
-          className="w-full h-full object-cover"
-        />
+        <div className="absolute inset-0 bg-black/40 z-30" />
+        <div className="absolute inset-0 bg-purple-900/80 mix-blend-multiply z-20" />
+        <div className="absolute inset-0 bg-purple-600/50 mix-blend-color z-20" />
+        <div className="absolute inset-0 bg-purple-500/30 mix-blend-overlay z-20" />
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+          className="w-full h-full object-cover grayscale"
+        >
+          <source src="https://videos.pexels.com/video-files/3129671/3129671-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+        </video>
       </div>
 
       <button 
@@ -910,6 +917,7 @@ export const Onboarding = () => {
     <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden">
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-black/40 z-30" />
         <div className="absolute inset-0 bg-purple-900/80 mix-blend-multiply z-20" />
         <div className="absolute inset-0 bg-purple-600/50 mix-blend-color z-20" />
         <div className="absolute inset-0 bg-purple-500/30 mix-blend-overlay z-20" />
@@ -1027,6 +1035,7 @@ export const Onboarding = () => {
     <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden items-center justify-center">
         {/* Background Video */}
       <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-black/40 z-30" />
         <div className="absolute inset-0 bg-purple-900/80 mix-blend-multiply z-20" />
         <div className="absolute inset-0 bg-purple-600/50 mix-blend-color z-20" />
         <div className="absolute inset-0 bg-purple-500/30 mix-blend-overlay z-20" />
