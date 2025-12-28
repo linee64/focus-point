@@ -8,6 +8,7 @@ interface StoreState {
   tasks: Task[];
   schedule: ScheduleEvent[];
   settings: UserSettings;
+  user?: { name: string; surname: string } | null;
   
   completeOnboarding: () => void;
   updateUser: (name: string, surname: string) => void;
@@ -69,6 +70,10 @@ export const useStore = create<StoreState>()(
       completeOnboarding: () => set({ hasOnboarded: true }),
 
       updateUser: (name, surname) => set({ user: { name, surname } }),
+
+      addScheduleEvent: (event) => set((state) => ({
+        schedule: [...state.schedule, { ...event, id: Math.random().toString(36).substr(2, 9) }]
+      })),
 
       addTask: (task) => set((state) => ({
         tasks: [...state.tasks, { ...task, id: Math.random().toString(36).substr(2, 9), isCompleted: false }]

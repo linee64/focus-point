@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { ChevronRight, ArrowLeft, Check, Eye, EyeOff, Plus, Trash2, Clock, X, Upload, Image as ImageIcon } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Check, Eye, EyeOff, Plus, Trash2, Clock, X, Upload } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { clsx } from 'clsx';
+import Confetti from 'react-confetti';
 
 // Custom Time Picker Component
 const TimePicker = ({ 
@@ -154,7 +155,7 @@ const slides = [
 
 export const Onboarding = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [view, setView] = useState<'carousel' | 'register' | 'login' | 'name-input' | 'activity-input' | 'step-3' | 'daily-routine'>('carousel');
+  const [view, setView] = useState<'carousel' | 'register' | 'login' | 'name-input' | 'activity-input' | 'step-3' | 'daily-routine' | 'completion'>('carousel');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isEmailValid, setIsEmailValid] = useState(false);
@@ -183,7 +184,16 @@ export const Onboarding = () => {
   const [activityName, setActivityName] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-  const [activities, setActivities] = useState<Array<{title: string, startTime: string, endTime: string}>>([]);
+  const [selectedDays, setSelectedDays] = useState<number[]>([]);
+  const [activities, setActivities] = useState<Array<{title: string, startTime: string, endTime: string, days: number[]}>>([]);
+
+  const toggleDay = (dayIndex: number) => {
+    setSelectedDays(prev => 
+      prev.includes(dayIndex) 
+        ? prev.filter(d => d !== dayIndex)
+        : [...prev, dayIndex]
+    );
+  };
 
   // Schedule upload state
   const [scheduleImage, setScheduleImage] = useState<string | null>(null);
@@ -255,7 +265,7 @@ export const Onboarding = () => {
     }
   };
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (info.offset.x < -50) {
       handleNext();
     } else if (info.offset.x > 50) {
@@ -286,11 +296,12 @@ export const Onboarding = () => {
   };
 
   const handleAddActivity = () => {
-    if (activityName && startTime && endTime) {
-      setActivities([...activities, { title: activityName, startTime, endTime }]);
+    if (activityName && startTime && endTime && selectedDays.length > 0) {
+      setActivities([...activities, { title: activityName, startTime, endTime, days: selectedDays }]);
       setActivityName('');
       setStartTime('');
       setEndTime('');
+      setSelectedDays([]);
     }
   };
 
@@ -301,12 +312,34 @@ export const Onboarding = () => {
   const handleCompleteOnboarding = () => {
     // Add all collected activities to the store
     activities.forEach(activity => {
-      addScheduleEvent({
-        title: activity.title,
-        startTime: activity.startTime,
-        endTime: activity.endTime,
-        type: 'activity'
-      });
+      // In a real app, we would handle recurrence. Here we just add one event or multiple?
+      // Let's add multiple events for the next week based on selected days.
+      // For simplicity in this demo, we might just store the pattern or add one example.
+      // Let's iterate next 7 days and add if day matches.
+      const today = new Date();
+      for(let i=0; i<7; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        // getDay(): 0=Sun, 1=Mon...6=Sat.
+        // We will use Mon=0, Tue=1... Sun=6 for our UI indices to match common ru week.
+        // Actually standard getDay() is 0=Sun. Let's map our UI to it.
+        // UI: Mon(0), Tue(1), Wed(2), Thu(3), Fri(4), Sat(5), Sun(6)
+        // Date.getDay(): Sun(0), Mon(1)...Sat(6)
+        // Map UI index to Date.getDay(): 
+        // 0->1, 1->2, 2->3, 3->4, 4->5, 5->6, 6->0
+        const jsDay = d.getDay();
+        const uiDay = jsDay === 0 ? 6 : jsDay - 1;
+        
+        if (activity.days.includes(uiDay)) {
+             addScheduleEvent({
+                title: activity.title,
+                startTime: activity.startTime,
+                endTime: activity.endTime,
+                type: 'activity'
+                // We would ideally pass the date here too if the store supports it
+            });
+        }
+      }
     });
     // Go to step 3 instead of completing immediately
     setView('step-3');
@@ -786,7 +819,7 @@ export const Onboarding = () => {
           playsInline
           className="w-full h-full object-cover grayscale"
         >
-          <source src="https://videos.pexels.com/video-files/3129671/3129671-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+          <source src="/background.mp4" type="video/mp4" />
         </video>
       </div>
 
@@ -928,7 +961,7 @@ export const Onboarding = () => {
           playsInline
           className="w-full h-full object-cover grayscale"
         >
-          <source src="https://videos.pexels.com/video-files/3129671/3129671-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+          <source src="/background.mp4" type="video/mp4" />
         </video>
       </div>
 
@@ -983,9 +1016,30 @@ export const Onboarding = () => {
               </div>
             </div>
 
+            {/* Days Selection */}
+            <div className="space-y-2">
+                <label className="text-sm text-gray-400 ml-1">Дни недели</label>
+                <div className="flex justify-between gap-1">
+                    {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => toggleDay(idx)}
+                            className={clsx(
+                                "w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors",
+                                selectedDays.includes(idx)
+                                    ? "bg-primary text-white"
+                                    : "bg-surface/50 border border-white/10 text-gray-400 hover:bg-white/10"
+                            )}
+                        >
+                            {day}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
             <button
               onClick={handleAddActivity}
-              disabled={!activityName || !startTime || !endTime}
+              disabled={!activityName || !startTime || !endTime || selectedDays.length === 0}
               className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus size={20} />
@@ -1006,7 +1060,11 @@ export const Onboarding = () => {
                     >
                         <div>
                             <div className="font-medium text-white">{activity.title}</div>
-                            <div className="text-sm text-gray-400">{activity.startTime} - {activity.endTime}</div>
+                            <div className="text-sm text-gray-400">
+                                {activity.startTime} - {activity.endTime} • {
+                                    activity.days.map(d => ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'][d]).join(', ')
+                                }
+                            </div>
                         </div>
                         <button 
                             onClick={() => handleRemoveActivity(index)}
@@ -1021,7 +1079,7 @@ export const Onboarding = () => {
 
           <button
             onClick={handleCompleteOnboarding}
-            className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg mt-4"
+            className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg mt-4 relative z-50 cursor-pointer active:scale-95"
           >
             Далее
           </button>
@@ -1046,7 +1104,7 @@ export const Onboarding = () => {
           playsInline
           className="w-full h-full object-cover grayscale"
         >
-          <source src="https://videos.pexels.com/video-files/3129671/3129671-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+          <source src="/background.mp4" type="video/mp4" />
         </video>
       </div>
 
@@ -1060,10 +1118,10 @@ export const Onboarding = () => {
       <div className="relative z-20 w-full max-w-md flex flex-col h-full pb-20">
           <div className="text-center mb-8 mt-auto">
             <h2 className="text-3xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-white">
-                Загрузите расписание
+                Загрузите расписание уроков
             </h2>
             <p className="text-gray-300 text-sm leading-relaxed">
-                Сфотографируйте или загрузите скриншот вашего расписания на неделю. ИИ распознает его автоматически.
+                Сфотографируйте или загрузите скриншот вашего расписания уроков на неделю. ИИ распознает его автоматически.
             </p>
           </div>
 
@@ -1143,7 +1201,7 @@ export const Onboarding = () => {
           playsInline
           className="w-full h-full object-cover grayscale"
         >
-          <source src="https://videos.pexels.com/video-files/3129671/3129671-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+          <source src="/background.mp4" type="video/mp4" />
         </video>
       </div>
 
@@ -1191,14 +1249,44 @@ export const Onboarding = () => {
         <div className="absolute bottom-[-20%] left-[-20%] w-[500px] h-[500px] bg-secondary/20 rounded-full blur-[100px]" />
       </div>
 
+      <Confetti
+        width={window.innerWidth}
+        height={window.innerHeight}
+        numberOfPieces={200}
+        recycle={false}
+        gravity={0.15}
+        initialVelocityY={20}
+      />
+
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         className="z-10 w-full max-w-sm space-y-8 flex flex-col items-center"
       >
-        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/30 mb-4">
-          <Check size={48} className="text-white" />
-        </div>
+        <motion.div 
+             initial={{ scale: 0, opacity: 0, y: -50 }}
+             animate={{ 
+                 scale: 1, 
+                 opacity: 1, 
+                 y: 0
+             }}
+             transition={{ 
+                 type: "spring",
+                 stiffness: 200,
+                 damping: 10,
+                 duration: 0.8,
+                 delay: 0.2
+             }}
+             className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/30 mb-4"
+         >
+          <motion.div
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+             <Check size={48} className="text-white" />
+          </motion.div>
+        </motion.div>
         
         <div className="space-y-4">
           <h2 className="text-3xl font-bold text-white">Готово!</h2>
