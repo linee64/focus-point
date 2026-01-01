@@ -1,4 +1,4 @@
-import { Bell, BookOpen, Clock, CheckCircle2, MapPin, Play, ChevronRight, Smile, Meh, Frown, Sparkles, Target, Plus } from 'lucide-react';
+import { Bell, BookOpen, Clock, CheckCircle2, MapPin, Smile, Meh, Frown, Sparkles, Target, Plus } from 'lucide-react';
 
 export const Dashboard = () => {
   return (
@@ -199,7 +199,7 @@ export const Dashboard = () => {
           <div className="bg-white/5 p-4 rounded-2xl border border-white/5 space-y-3">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-bold text-white text-sm">Сочинение по литературе</h3>
+                <h3 className="font-bold text-gray-900 text-sm">Сочинение по литературе</h3>
                 <p className="text-xs text-gray-500 mt-0.5">Литература</p>
               </div>
               <div className="flex items-center gap-1 text-amber-400 text-xs font-bold bg-amber-400/10 px-2 py-1 rounded-lg">
@@ -257,63 +257,7 @@ export const Dashboard = () => {
         </div>
       </section>
 
-      {/* Review / Repetition */}
-      <section className="space-y-3">
-        <div className="flex justify-between items-center px-1">
-          <div className="flex items-center gap-2 text-white/90">
-            <div className="w-5 h-5 rounded-full border border-purple-400 flex items-center justify-center">
-              <div className="w-2.5 h-2.5 bg-purple-400 rounded-full"></div>
-            </div>
-            <h2 className="font-bold">Повторение</h2>
-          </div>
-          <span className="text-xs text-gray-500">~18 мин</span>
-        </div>
 
-        <div className="bg-[#121215] border border-purple-500/20 rounded-3xl p-5 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/10 blur-[50px] rounded-full pointer-events-none"></div>
-          
-          <div className="flex justify-between items-start mb-6 relative z-10">
-            <div>
-              <h3 className="text-2xl font-bold text-white">2 темы</h3>
-              <p className="text-xs text-gray-400 mt-1">для закрепления материала</p>
-            </div>
-            <button className="flex items-center gap-2 bg-[#8B5CF6] hover:bg-[#7c4dff] text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-purple-500/30">
-              <Play className="w-4 h-4 fill-white" />
-              Начать
-            </button>
-          </div>
-
-          <div className="space-y-3 relative z-10">
-            <div className="flex items-center justify-between group cursor-pointer">
-              <div className="flex items-center gap-3">
-                <div className="w-1 h-8 bg-blue-500 rounded-full"></div>
-                <div>
-                  <h4 className="font-bold text-sm text-gray-200">Интегралы</h4>
-                  <p className="text-[10px] text-gray-500">Математика • 10 мин</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                 <span className="text-[10px] font-bold text-purple-300 bg-purple-500/20 px-1.5 py-0.5 rounded">1x</span>
-                 <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between group cursor-pointer">
-              <div className="flex items-center gap-3">
-                <div className="w-1 h-8 bg-purple-500 rounded-full"></div>
-                <div>
-                  <h4 className="font-bold text-sm text-gray-200">Законы Ньютона</h4>
-                  <p className="text-[10px] text-gray-500">Физика • 8 мин</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                 <span className="text-[10px] font-bold text-purple-300 bg-purple-500/20 px-1.5 py-0.5 rounded">2x</span>
-                 <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Daily Check-in */}
       <section className="bg-[#121215] border border-white/5 rounded-3xl p-5 space-y-4">

@@ -27,3 +27,31 @@
     - Updated date format to short day names (ПН, ВТ...).
     - Added logo placeholder (gradient circle) next to title.
     - Moved Calendar button to the actions bar below the date strip.
+
+## 2026-01-01
+- **Dashboard Overhaul**:
+    - Rewrote `Dashboard.tsx` to match new design mockups.
+    - Updated `BottomNav.tsx` with new icons and labels (Home, Schedule, Deadlines, Review, Profile).
+    - Applied diagonal gradient background (purple -> black -> blue) to the Dashboard layout.
+    - Darkened card backgrounds and added specific styling for "Current" vs "Past/Future" lessons.
+    - Removed the "Review / Repetition" section from Dashboard.
+- **Review / AI Tutor Page Implementation**:
+    - Created `src/pages/Review.tsx` corresponding to the "ИИ Тьютор" tab.
+    - Implemented UI matching the user's design:
+        - Header with "SleamAI", date, and notification bell (consistent with Dashboard).
+        - Dark gradient background (purple/black/blue).
+        - "Notes from video" card with purple accent and glow.
+        - "Upload video" card.
+        - "Paste link" card with input field.
+    - Registered `/review` route in `App.tsx`.
+    - Verified app startup (dependencies installed, server running on port 5174).
+    - **Background Fix**: Moved background logic from `Review.tsx` to `Layout.tsx`.
+    - **Refined Background**:
+        - Replaced diagonal gradient with two distinct rounded blurred blobs (Purple top-left, Blue bottom-right).
+    - **UI Polish**:
+        - Removed the top border gradient line from the "AI Notes" card.
+        - Enhanced the purple glow/shadow around the "AI Notes" card.
+        - Cleaned up header (removed accidental dash text).
+        - Added `backdrop-blur-sm` and adjusted opacity for "Upload Video" and "Paste Link" cards to make them slightly darker and blurred.
+        - **Background Update**: Reduced size of background blobs from 300px to 200px and adjusted positioning slightly to keep them visible but unobtrusive.
+        - **Global Background Update**: Applied the dark background with purple/blue blobs to **all tabs except the main Dashboard** (Schedule, Deadlines, Review, Settings, Profile).

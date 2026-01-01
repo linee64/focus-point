@@ -2,10 +2,12 @@ import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { Tasks } from './pages/Tasks';
-import { AITutor } from './pages/AITutor';
 import { Settings } from './pages/Settings';
 import { Onboarding } from './pages/Onboarding';
+import { Schedule } from './pages/Schedule';
 import { useStore } from './store/useStore';
+import { Review } from './pages/Review';
+
 
 function App() {
   const { hasOnboarded } = useStore();
@@ -18,12 +20,13 @@ function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/tutor" element={<AITutor />} />
+        <Route path="/schedule" element={<Schedule />} />
+        <Route path="/deadlines" element={<Tasks />} />
+        <Route path="/review" element={<Review />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
     </Layout>
-  )
+  );
 }
 
 export default App

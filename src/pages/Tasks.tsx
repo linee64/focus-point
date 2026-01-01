@@ -1,66 +1,154 @@
 import { motion } from 'framer-motion';
-import { useStore } from '../store/useStore';
-import { Plus, CheckCircle2, Circle } from 'lucide-react';
+import { Sparkles, Bell, Plus, Clock, CheckCircle2, Circle } from 'lucide-react';
 import { clsx } from 'clsx';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { useState } from 'react';
 
 export const Tasks = () => {
-  const { tasks, toggleTask } = useStore();
+  const [filter, setFilter] = useState<'all' | 'active' | 'done'>('all');
+
+  const deadlines = [
+    { 
+      id: 1, 
+      title: 'Сочинение по литературе', 
+      subject: 'Литература', 
+      deadline: '30 дек', 
+      isCompleted: false, 
+      color: 'border-orange-500/50 shadow-[0_0_15px_-3px_rgba(249,115,22,0.3)]'
+    },
+    { 
+      id: 2, 
+      title: 'Проект по физике', 
+      subject: 'Физика', 
+      deadline: '5 янв', 
+      isCompleted: false,
+      color: 'border-blue-500/30 shadow-[0_0_15px_-3px_rgba(59,130,246,0.2)]'
+    },
+    { 
+      id: 3, 
+      title: 'Контрольная по математике', 
+      subject: 'Математика', 
+      deadline: '29 дек', 
+      isCompleted: true,
+      color: 'border-white/5'
+    },
+    { 
+      id: 4, 
+      title: 'Реферат по истории', 
+      subject: 'История', 
+      deadline: '10 янв', 
+      isCompleted: false,
+      color: 'border-white/5'
+    }
+  ];
+
+  const filteredTasks = deadlines.filter(task => {
+    if (filter === 'active') return !task.isCompleted;
+    if (filter === 'done') return task.isCompleted;
+    return true;
+  });
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-6 pb-20"
     >
-      <header className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Дедлайны</h1>
-        <button className="p-2 bg-white text-black rounded-full hover:bg-gray-200 transition-colors">
-          <Plus size={20} />
+      {/* Header */}
+      <header className="flex justify-between items-center pt-2 px-1">
+        <div className="flex gap-3 items-center">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+            <Sparkles className="text-white w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-[#8B5CF6]">SleamAI</h1>
+            <p className="text-xs text-gray-400 capitalize">
+              {format(new Date(), 'EEEE, d MMMM', { locale: ru })}
+            </p>
+          </div>
+        </div>
+        <button className="p-2 rounded-full bg-[#18181B] hover:bg-[#27272A] transition-colors border border-white/5 relative">
+          <Bell className="w-5 h-5 text-gray-400" />
+          <div className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-[#8B5CF6] rounded-full ring-2 ring-[#18181B]"></div>
         </button>
       </header>
-      
-      <div className="space-y-4">
-        {tasks.map((task) => (
+
+      {/* Page Title & Stats */}
+      <div className="flex justify-between items-start px-1">
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-1">Дедлайны</h2>
+          <p className="text-sm text-gray-400">3 активных • 1 выполнено</p>
+        </div>
+        <button className="w-10 h-10 rounded-full bg-[#8B5CF6] hover:bg-[#7c3aed] flex items-center justify-center shadow-lg shadow-purple-500/30 transition-colors">
+          <Plus className="w-6 h-6 text-white" />
+        </button>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex gap-2 px-1">
+        {[
+          { label: 'Все', value: 'all' },
+          { label: 'Активные', value: 'active' },
+          { label: 'Готово', value: 'done' }
+        ].map((tab) => {
+           const isActive = filter === tab.value;
+           return (
+             <button
+               key={tab.value}
+               onClick={() => setFilter(tab.value as any)}
+               className={clsx(
+                 "px-5 py-2 rounded-full text-sm font-medium transition-colors",
+                 isActive 
+                   ? "bg-white text-black" 
+                   : "text-gray-400 hover:text-white hover:bg-white/5"
+               )}
+             >
+               {tab.label}
+             </button>
+           );
+        })}
+      </div>
+
+      {/* Tasks List */}
+      <div className="space-y-3 px-1">
+        {filteredTasks.map((task) => (
           <div 
-            key={task.id} 
-            className="p-4 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center group cursor-pointer hover:border-primary/50 transition-colors"
-            onClick={() => toggleTask(task.id)}
+            key={task.id}
+            className={clsx(
+              "relative p-4 rounded-3xl border transition-all",
+              task.isCompleted ? "bg-green-700/10 border-green-300/10" : "bg-[#0f0f13]",
+              !task.isCompleted && (task.color || "border-white/5"),
+              "group"
+            )}
           >
-            <div className="flex items-center gap-3">
-              <button className={clsx("transition-colors", task.isCompleted ? "text-primary" : "text-gray-500 group-hover:text-primary-light")}>
-                {task.isCompleted ? <CheckCircle2 size={24} /> : <Circle size={24} />}
-              </button>
-              <div>
-                <h4 className={clsx("font-medium transition-all", task.isCompleted && "line-through text-gray-500")}>
-                  {task.title}
-                </h4>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 uppercase tracking-wide">
-                    {task.type}
-                  </span>
-                  {task.deadline && (
-                    <span className="text-xs text-gray-500">
-                      Срок: {format(parseISO(task.deadline), 'dd.MM')}
-                    </span>
-                  )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button className="text-gray-500 hover:text-[#8B5CF6] transition-colors">
+                  {task.isCompleted 
+                    ? <CheckCircle2 className="w-6 h-6 text-green-500" /> 
+                    : <Circle className="w-6 h-6 text-purple-400/50" />
+                  }
+                </button>
+                
+                <div>
+                  <h3 className={clsx("font-bold text-base mb-0.5", task.isCompleted ? "text-gray-500 line-through" : "text-gray-200")}>
+                    {task.title}
+                  </h3>
+                  <p className="text-sm text-gray-500">{task.subject}</p>
                 </div>
               </div>
+
+              <div className={clsx(
+                "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border",
+                task.id === 1 ? "bg-amber-500/10 border-amber-500/20 text-amber-400" :
+                task.isCompleted ? "bg-green-500/10 border-green-500/20 text-green-400" :
+                "bg-white/5 border-white/10 text-gray-400"
+              )}>
+                <Clock className="w-3.5 h-3.5" />
+                {task.deadline}
+              </div>
             </div>
-            
-            {task.spacedRepetition && (
-               <div className="flex flex-col items-end">
-                 <span className="text-[10px] text-gray-400">Повтор</span>
-                 <div className="flex gap-0.5 mt-1">
-                   {[...Array(3)].map((_, i) => (
-                     <div key={i} className={clsx(
-                       "w-1.5 h-1.5 rounded-full",
-                       i < task.spacedRepetition!.level ? "bg-primary-light" : "bg-gray-700"
-                     )} />
-                   ))}
-                 </div>
-               </div>
-            )}
           </div>
         ))}
       </div>

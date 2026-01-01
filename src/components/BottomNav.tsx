@@ -9,7 +9,7 @@ export const BottomNav = () => {
     { icon: Home, label: 'Главная', path: '/' },
     { icon: Calendar, label: 'Расписание', path: '/schedule' },
     { icon: Target, label: 'Дедлайны', path: '/deadlines' },
-    { icon: Brain, label: 'Повтор', path: '/review' },
+    { icon: Brain, label: 'ИИ Тьютор', path: '/review' },
     { icon: User, label: 'Профиль', path: '/profile' },
   ];
 

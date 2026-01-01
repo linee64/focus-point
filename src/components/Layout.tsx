@@ -14,14 +14,20 @@ export const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen bg-background text-white font-sans flex justify-center">
       <div className={clsx(
-        "w-full max-w-md min-h-screen relative shadow-2xl shadow-black flex flex-col",
+        "w-full max-w-md min-h-screen relative shadow-2xl shadow-black flex flex-col overflow-hidden",
         isDashboard 
           ? "bg-gradient-to-br from-[#1a0536] via-[#050505] via-70% to-[#0a1029]" 
-          : "bg-surface"
+          : "bg-[#0B0B0F]"
       )}>
-        {/* Header Area could go here if global */}
+        {/* Background Elements for non-dashboard pages */}
+        {!isDashboard && (
+          <>
+            <div className="absolute top-[-5%] left-[-10%] w-[200px] h-[200px] bg-purple-900/40 rounded-full blur-[80px] pointer-events-none mix-blend-screen" />
+            <div className="absolute bottom-[-5%] right-[-10%] w-[200px] h-[200px] bg-blue-900/40 rounded-full blur-[80px] pointer-events-none mix-blend-screen" />
+          </>
+        )}
         
-        <main className="flex-1 overflow-y-auto pb-20 p-4 scrollbar-hide">
+        <main className="flex-1 overflow-y-auto pb-20 p-4 scrollbar-hide relative z-10">
           {children}
         </main>
 
