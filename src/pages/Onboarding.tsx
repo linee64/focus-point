@@ -41,7 +41,7 @@ const TimePicker = ({
       <label className="text-sm text-gray-400 ml-1 mb-2 block">{label}</label>
       <button 
         onClick={() => setIsOpen(true)}
-        className="w-full bg-surface/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-4 text-white text-left flex items-center justify-between hover:bg-white/5 transition-colors"
+        className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-4 text-white text-left flex items-center justify-between hover:bg-white/10 transition-colors"
       >
         <span className={!value ? "text-gray-500" : "text-white"}>
           {value || "--:--"}
@@ -410,7 +410,7 @@ export const Onboarding = () => {
             
             {/* Text Container */}
             <div className="flex-1 px-8 pt-8 flex flex-col items-center text-center">
-              <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-primary-light to-secondary-light bg-clip-text text-transparent">
+              <h2 className="text-3xl font-bold mb-4 text-[#8B5CF6]">
                 {slides[currentSlide].title}
               </h2>
               <p className="text-gray-400 text-lg leading-relaxed">
@@ -504,7 +504,7 @@ export const Onboarding = () => {
           className="space-y-8"
         >
           <div className="space-y-2 text-center">
-            <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-white">
+            <h2 className="text-4xl font-bold text-primary">
               Добро пожаловать
             </h2>
             <p className="text-gray-300 text-lg">
@@ -521,7 +521,7 @@ export const Onboarding = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full bg-surface/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors pr-12"
+                  className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors pr-12"
                 />
                 <AnimatePresence>
                   {isEmailValid && (
@@ -572,7 +572,7 @@ export const Onboarding = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Минимум 6 символов..."
-                        className={`w-full bg-surface/50 backdrop-blur-sm border rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none transition-colors pr-20 ${
+                        className={`w-full bg-white/5 backdrop-blur-md border rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none transition-colors pr-20 ${
                           showPasswordError ? 'border-red-500' : 'border-white/10 focus:border-primary'
                         }`}
                       />
@@ -653,7 +653,7 @@ export const Onboarding = () => {
           className="space-y-8"
         >
           <div className="space-y-2 text-center">
-            <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-white">
+            <h2 className="text-4xl font-bold text-primary">
               С возвращением!
             </h2>
             <p className="text-gray-300 text-lg">
@@ -670,7 +670,7 @@ export const Onboarding = () => {
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full bg-surface/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                  className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
                 />
                 <AnimatePresence>
                   {isLoginEmailValid && (
@@ -716,7 +716,7 @@ export const Onboarding = () => {
                                   setLoginError(false);
                               }}
                               placeholder="Введите пароль"
-                              className={`w-full bg-surface/50 backdrop-blur-sm border rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none transition-colors pr-12 ${
+                              className={`w-full bg-white/5 backdrop-blur-md border rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none transition-colors pr-12 ${
                                 loginError ? 'border-red-500' : 'border-white/10 focus:border-primary'
                               }`}
                             />
@@ -837,7 +837,7 @@ export const Onboarding = () => {
           className="space-y-8"
         >
           <div className="space-y-2 text-center">
-            <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-white">
+            <h2 className="text-4xl font-bold text-primary">
               Расскажите о себе
             </h2>
             <p className="text-gray-300 text-lg">
@@ -853,7 +853,7 @@ export const Onboarding = () => {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="Ваше имя"
-                className="w-full bg-surface/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
               />
             </div>
             <div className="space-y-2">
@@ -863,7 +863,7 @@ export const Onboarding = () => {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Ваша фамилия"
-                className="w-full bg-surface/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
               />
             </div>
 
@@ -881,7 +881,7 @@ export const Onboarding = () => {
                     "flex-1 py-3 rounded-xl border transition-all font-medium",
                     schoolShift === '1' 
                       ? "bg-primary text-white border-primary" 
-                      : "bg-surface/50 border-white/10 text-gray-400 hover:bg-white/5"
+                      : "bg-white/5 backdrop-blur-md border-white/10 text-gray-400 hover:bg-white/10"
                   )}
                 >
                   1 смена
@@ -896,7 +896,7 @@ export const Onboarding = () => {
                     "flex-1 py-3 rounded-xl border transition-all font-medium",
                     schoolShift === '2' 
                       ? "bg-primary text-white border-primary" 
-                      : "bg-surface/50 border-white/10 text-gray-400 hover:bg-white/5"
+                      : "bg-white/5 backdrop-blur-md border-white/10 text-gray-400 hover:bg-white/10"
                   )}
                 >
                   2 смена
@@ -979,7 +979,7 @@ export const Onboarding = () => {
           className="space-y-6"
         >
           <div className="space-y-2 text-center">
-            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-white">
+            <h2 className="text-3xl font-bold text-primary">
               Ваше расписание
             </h2>
             <p className="text-gray-300 text-lg">
@@ -995,7 +995,7 @@ export const Onboarding = () => {
                 value={activityName}
                 onChange={(e) => setActivityName(e.target.value)}
                 placeholder="Например: Подготовка к IELTS"
-                className="w-full bg-surface/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
               />
             </div>
             
@@ -1028,7 +1028,7 @@ export const Onboarding = () => {
                                 "w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors",
                                 selectedDays.includes(idx)
                                     ? "bg-primary text-white"
-                                    : "bg-surface/50 border border-white/10 text-gray-400 hover:bg-white/10"
+                                    : "bg-white/5 backdrop-blur-md border border-white/10 text-gray-400 hover:bg-white/10"
                             )}
                         >
                             {day}
@@ -1056,7 +1056,7 @@ export const Onboarding = () => {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
-                        className="flex justify-between items-center p-4 rounded-xl bg-surface/50 backdrop-blur-sm border border-white/10"
+                        className="flex justify-between items-center p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10"
                     >
                         <div>
                             <div className="font-medium text-white">{activity.title}</div>
@@ -1117,7 +1117,7 @@ export const Onboarding = () => {
       
       <div className="relative z-20 w-full max-w-md flex flex-col h-full pb-20">
           <div className="text-center mb-8 mt-auto">
-            <h2 className="text-3xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-white">
+            <h2 className="text-3xl font-bold mb-3 text-primary">
                 Загрузите расписание уроков
             </h2>
             <p className="text-gray-300 text-sm leading-relaxed">
@@ -1214,7 +1214,7 @@ export const Onboarding = () => {
 
       <div className="relative z-20 w-full max-w-md flex flex-col h-full pb-20">
         <div className="text-center mb-6 mt-auto">
-          <h2 className="text-3xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-white">
+          <h2 className="text-3xl font-bold mb-3 text-primary">
               Ваш режим дня
           </h2>
           <p className="text-gray-300 text-sm leading-relaxed">

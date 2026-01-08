@@ -7,25 +7,36 @@ import { Onboarding } from './pages/Onboarding';
 import { Schedule } from './pages/Schedule';
 import { useStore } from './store/useStore';
 import { Review } from './pages/Review';
+import { Profile } from './pages/Profile';
+import { Notifications } from './components/Notifications';
+import { AddTaskModal } from './components/AddTaskModal';
+import { useEffect } from 'react';
 
 
 function App() {
-  const { hasOnboarded } = useStore();
+  const { hasOnboarded, isNotificationsOpen, setNotificationsOpen, isAddTaskOpen, setAddTaskOpen } = useStore();
 
   if (!hasOnboarded) {
     return <Onboarding />;
   }
 
   return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/schedule" element={<Schedule />} />
-        <Route path="/deadlines" element={<Tasks />} />
-        <Route path="/review" element={<Review />} />
-        <Route path="/settings" element={<Settings />} />
-      </Routes>
-    </Layout>
+    <>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/schedule" element={<Schedule />} />
+          <Route path="/deadlines" element={<Tasks />} />
+          <Route path="/review" element={<Review />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+        </Routes>
+      </Layout>
+
+      {/* Global Modals */}
+      <Notifications isOpen={isNotificationsOpen} onClose={() => setNotificationsOpen(false)} />
+      <AddTaskModal isOpen={isAddTaskOpen} onClose={() => setAddTaskOpen(false)} />
+    </>
   );
 }
 

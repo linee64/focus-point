@@ -1,0 +1,211 @@
+import {
+  Bell,
+  ChevronRight,
+  Flame,
+  Target,
+  FileText,
+  Sparkles,
+  Moon,
+  LogOut,
+  User,
+  Check,
+  Trophy
+} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { useStore } from '../store/useStore';
+import { useState } from 'react';
+
+export const Profile = () => {
+  const { logout, setNotificationsOpen } = useStore();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [sleepModeEnabled, setSleepModeEnabled] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6 pb-20"
+    >
+      {/* Header */}
+      <header className="flex justify-between items-center pt-2 px-1">
+        <div className="flex gap-3 items-center">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+            <Sparkles className="text-white w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-[#8B5CF6]">SleamAI</h1>
+            <p className="text-xs text-gray-400">Суббота, 3 Января</p>
+          </div>
+        </div>
+        <button 
+          onClick={() => setNotificationsOpen(true)}
+          className="p-2 rounded-full bg-[#18181B] hover:bg-[#27272A] transition-colors border border-white/5 relative"
+        >
+          <Bell className="w-5 h-5 text-gray-400" />
+          <div className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-[#8B5CF6] rounded-full ring-2 ring-[#18181B]"></div>
+        </button>
+      </header>
+
+      {/* Page Title */}
+      <h2 className="text-2xl font-bold px-1">Профиль</h2>
+
+      {/* User Card */}
+      <div className="bg-[#18181B]/50 backdrop-blur-md p-5 rounded-3xl border border-white/10 relative overflow-hidden">
+         {/* Background Glow */}
+         <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+         <div className="flex items-center gap-4 mb-6 relative z-10">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                <User className="w-8 h-8 text-white" />
+            </div>
+            <div>
+                <h3 className="text-xl font-bold">Александр</h3>
+                <p className="text-sm text-gray-400">10 класс • Гимназия №5</p>
+            </div>
+         </div>
+
+         <div className="grid grid-cols-3 gap-4 relative z-10">
+            <div className="flex flex-col items-center gap-1">
+                <Flame className="w-5 h-5 text-orange-400 mb-1" />
+                <span className="text-lg font-bold">5 дней</span>
+                <span className="text-[10px] text-gray-500 font-medium">Streak</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 border-x border-white/5">
+                <Target className="w-5 h-5 text-blue-400 mb-1" />
+                <span className="text-lg font-bold">23</span>
+                <span className="text-[10px] text-gray-500 font-medium">Задач</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+                <FileText className="w-5 h-5 text-purple-400 mb-1" />
+                <span className="text-lg font-bold">12</span>
+                <span className="text-[10px] text-gray-500 font-medium">Конспектов</span>
+            </div>
+         </div>
+      </div>
+
+      {/* AI Analysis */}
+      <div className="bg-[#18181B]/50 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex gap-4 items-start">
+        <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-purple-400" />
+        </div>
+        <div>
+            <h3 className="font-bold mb-1">ИИ-анализ</h3>
+            <p className="text-xs text-gray-400 leading-relaxed">
+                Ты создал 12 конспектов за этот месяц! Это на 40% больше, чем в прошлом. Так держать! 🎯
+            </p>
+        </div>
+      </div>
+
+      {/* Settings List */}
+      <div className="space-y-2">
+        {/* Notifications */}
+        <div className="bg-[#18181B]/50 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+                <Bell className="w-5 h-5 text-gray-400" />
+                <div>
+                    <div className="font-medium">Уведомления</div>
+                    <div className="text-[10px] text-gray-500">Напоминания о дедлайнах</div>
+                </div>
+            </div>
+            <button 
+                onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                className={`w-12 h-6 rounded-full relative transition-colors duration-200 ${notificationsEnabled ? 'bg-[#8B5CF6]' : 'bg-gray-600'}`}
+            >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-200 ${notificationsEnabled ? 'left-7' : 'left-1'}`}></div>
+            </button>
+        </div>
+
+        {/* Sleep Mode */}
+        <div className="bg-[#18181B]/50 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+                <Moon className="w-5 h-5 text-gray-400" />
+                <div>
+                    <div className="font-medium">Режим сна</div>
+                    <div className="text-[10px] text-gray-500">Без уведомлений с 22:00 до 8:00</div>
+                </div>
+            </div>
+            <button 
+                onClick={() => setSleepModeEnabled(!sleepModeEnabled)}
+                className={`w-12 h-6 rounded-full relative transition-colors duration-200 ${sleepModeEnabled ? 'bg-[#8B5CF6]' : 'bg-gray-700'}`}
+            >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-200 ${sleepModeEnabled ? 'left-7' : 'left-1'}`}></div>
+            </button>
+        </div>
+
+        {/* Settings Link */}
+        <Link to="/settings" className="bg-[#18181B]/50 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex justify-between items-center group">
+            <div className="flex items-center gap-3">
+                <div className="w-5 h-5 flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
+                        <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M19.4 15C20.0627 14.3373 20.0627 13.2627 19.4 12.6L18.6 11.8C18.2329 11.4329 18.2329 10.8373 18.6 10.47L19.4 9.67005C20.0627 9.00731 20.0627 7.93279 19.4 7.27005L17.27 5.14005C16.6073 4.47731 15.5327 4.47731 14.87 5.14005L14.07 5.94005C13.7027 6.30731 13.1072 6.30731 12.74 5.94005L11.94 5.14005C11.2773 4.47731 10.2027 4.47731 9.54005 5.14005L7.41005 7.27005C6.74731 7.93279 6.74731 9.00731 7.41005 9.67005L8.21005 10.47C8.57731 10.8373 8.57731 11.4329 8.21005 11.8L7.41005 12.6C6.74731 13.2627 6.74731 14.3373 7.41005 15L9.54005 17.13C10.2027 17.7927 11.2773 17.7927 11.94 17.13L12.74 16.33C13.1072 15.9627 13.7027 15.9627 14.07 16.33L14.87 17.13C15.5327 17.7927 16.6073 17.7927 17.27 17.13L19.4 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                </div>
+                <div className="font-medium">Настройки</div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+        </Link>
+      </div>
+
+      {/* Achievements */}
+      <div>
+        <div className="flex justify-between items-center px-1 mb-3">
+            <div className="flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-amber-400" />
+                <h3 className="font-bold text-lg">Достижения</h3>
+            </div>
+            <span className="text-xs text-gray-500">2/3</span>
+        </div>
+
+        <div className="space-y-2">
+            {/* Achievement 1 */}
+            <div className="bg-[#18181B]/50 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-black" strokeWidth={3} />
+                    </div>
+                </div>
+                <div>
+                    <h4 className="font-bold text-sm">Первый конспект</h4>
+                    <p className="text-xs text-gray-500">Создал первый конспект с ИИ</p>
+                </div>
+            </div>
+
+            {/* Achievement 2 */}
+            <div className="bg-[#18181B]/50 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-black" strokeWidth={3} />
+                    </div>
+                </div>
+                <div>
+                    <h4 className="font-bold text-sm">Неделя без пропусков</h4>
+                    <p className="text-xs text-gray-500">7 дней подряд заходил в приложение</p>
+                </div>
+            </div>
+
+            {/* Achievement 3 (Locked) */}
+            <div className="bg-[#18181B]/30 backdrop-blur-md p-4 rounded-2xl border border-white/5 flex items-center gap-4 opacity-70">
+                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0">
+                     <Trophy className="w-5 h-5 text-gray-500" />
+                </div>
+                <div>
+                    <h4 className="font-bold text-sm text-gray-400">Мастер дедлайнов</h4>
+                    <p className="text-xs text-gray-600">Выполнил 10 задач вовремя</p>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      {/* Logout */}
+      <button 
+        onClick={logout}
+        className="w-full p-4 rounded-2xl bg-[#18181B]/50 backdrop-blur-md border border-white/10 flex items-center justify-center gap-2 text-red-500 hover:bg-red-500/10 transition-colors"
+      >
+        <LogOut className="w-5 h-5" />
+        <span className="font-medium">Выйти</span>
+      </button>
+    </motion.div>
+  );
+};

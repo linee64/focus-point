@@ -1,6 +1,7 @@
 export interface Task {
   id: string;
   title: string;
+  subject?: string;
   deadline?: string; // ISO Date
   isCompleted: boolean;
   type: 'homework' | 'project' | 'exam' | 'other';
@@ -13,10 +14,12 @@ export interface Task {
 export interface ScheduleEvent {
   id: string;
   title: string;
+  date: string; // YYYY-MM-DD
   startTime: string; // HH:mm
   endTime: string; // HH:mm
   type: 'school' | 'sleep' | 'activity' | 'study' | 'break';
   taskId?: string; // If linked to a task
+  subtasks?: string[];
 }
 
 export interface UserSettings {

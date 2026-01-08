@@ -1,9 +1,11 @@
 import { motion } from 'framer-motion';
-import { LogOut } from 'lucide-react';
+import { LogOut, ChevronLeft } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { useNavigate } from 'react-router-dom';
 
 export const Settings = () => {
-  const logout = useStore((state) => state.logout);
+  const { logout } = useStore();
+  const navigate = useNavigate();
 
   return (
     <motion.div 
@@ -11,7 +13,13 @@ export const Settings = () => {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <header>
+      <header className="flex items-center gap-4">
+        <button 
+          onClick={() => navigate(-1)}
+          className="p-2 rounded-full bg-card hover:bg-white/5 transition-colors border border-border"
+        >
+          <ChevronLeft className="w-5 h-5 text-primary" />
+        </button>
         <h1 className="text-2xl font-bold">Настройки</h1>
       </header>
 

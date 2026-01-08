@@ -1,53 +1,73 @@
 import { motion } from 'framer-motion';
-import { Sparkles, Bell, Plus, Clock, CheckCircle2, Circle } from 'lucide-react';
+import { Sparkles, Bell, Plus, Clock, CheckCircle2, Circle, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { format } from 'date-fns';
+import { format, parseISO, differenceInDays, startOfDay } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { useState } from 'react';
+import { useStore } from '../store/useStore';
 
 export const Tasks = () => {
+  const { tasks, removeTask, toggleTask, setNotificationsOpen, setAddTaskOpen } = useStore();
   const [filter, setFilter] = useState<'all' | 'active' | 'done'>('all');
 
-  const deadlines = [
-    { 
-      id: 1, 
-      title: 'Сочинение по литературе', 
-      subject: 'Литература', 
-      deadline: '30 дек', 
-      isCompleted: false, 
-      color: 'border-orange-500/50 shadow-[0_0_15px_-3px_rgba(249,115,22,0.3)]'
-    },
-    { 
-      id: 2, 
-      title: 'Проект по физике', 
-      subject: 'Физика', 
-      deadline: '5 янв', 
-      isCompleted: false,
-      color: 'border-blue-500/30 shadow-[0_0_15px_-3px_rgba(59,130,246,0.2)]'
-    },
-    { 
-      id: 3, 
-      title: 'Контрольная по математике', 
-      subject: 'Математика', 
-      deadline: '29 дек', 
-      isCompleted: true,
-      color: 'border-white/5'
-    },
-    { 
-      id: 4, 
-      title: 'Реферат по истории', 
-      subject: 'История', 
-      deadline: '10 янв', 
-      isCompleted: false,
-      color: 'border-white/5'
-    }
-  ];
-
-  const filteredTasks = deadlines.filter(task => {
+  const filteredTasks = tasks.filter(task => {
     if (filter === 'active') return !task.isCompleted;
     if (filter === 'done') return task.isCompleted;
     return true;
   });
+
+  const getTaskStatus = (deadline?: string) => {
+    if (!deadline) return { colorClass: 'border-white/5', daysLeft: 999, label: '' };
+    
+    const daysLeft = differenceInDays(parseISO(deadline), startOfDay(new Date()));
+    
+    let label = '';
+    if (daysLeft < 0) label = 'Просрочено';
+    else if (daysLeft === 0) label = 'Сегодня';
+    else if (daysLeft === 1) label = 'Завтра';
+    else label = `${daysLeft} дн.`;
+
+    if (daysLeft < 0) {
+      return { 
+        colorClass: 'border-red-500/50 shadow-[0_0_15px_-3px_rgba(239,68,68,0.3)]', 
+        badgeClass: 'bg-red-500/10 border-red-500/20 text-red-400',
+        daysLeft, 
+        label 
+      };
+    }
+    if (daysLeft <= 3) {
+      return { 
+        colorClass: 'border-[#8B5CF6]/50 shadow-[0_0_15px_-3px_rgba(139,92,246,0.3)]', 
+        badgeClass: 'bg-[#8B5CF6]/10 border-[#8B5CF6]/20 text-[#A78BFA]',
+        daysLeft, 
+        label 
+      };
+    }
+    if (daysLeft < 5) {
+      return { 
+        colorClass: 'border-yellow-500/50 shadow-[0_0_15px_-3px_rgba(234,179,8,0.2)]', 
+        badgeClass: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400',
+        daysLeft, 
+        label 
+      };
+    }
+    
+    return { 
+      colorClass: 'border-green-500/50 shadow-[0_0_15px_-3px_rgba(34,197,94,0.2)]', 
+      badgeClass: 'bg-green-500/10 border-green-500/20 text-green-400',
+      daysLeft, 
+      label 
+    };
+  };
+
+  const getDeadlineText = (deadline?: string) => {
+    if (!deadline) return '';
+    try {
+      return format(parseISO(deadline), 'd MMM', { locale: ru });
+    } catch (e) {
+      return deadline;
+    }
+  };
 
   return (
     <motion.div 
@@ -68,7 +88,10 @@ export const Tasks = () => {
             </p>
           </div>
         </div>
-        <button className="p-2 rounded-full bg-[#18181B] hover:bg-[#27272A] transition-colors border border-white/5 relative">
+        <button 
+          onClick={() => setNotificationsOpen(true)}
+          className="p-2 rounded-full bg-[#18181B] hover:bg-[#27272A] transition-colors border border-white/5 relative"
+        >
           <Bell className="w-5 h-5 text-gray-400" />
           <div className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-[#8B5CF6] rounded-full ring-2 ring-[#18181B]"></div>
         </button>
@@ -78,9 +101,14 @@ export const Tasks = () => {
       <div className="flex justify-between items-start px-1">
         <div>
           <h2 className="text-2xl font-bold text-white mb-1">Дедлайны</h2>
-          <p className="text-sm text-gray-400">3 активных • 1 выполнено</p>
+          <p className="text-sm text-gray-400">
+            {tasks.filter(t => !t.isCompleted).length} активных • {tasks.filter(t => t.isCompleted).length} выполнено
+          </p>
         </div>
-        <button className="w-10 h-10 rounded-full bg-[#8B5CF6] hover:bg-[#7c3aed] flex items-center justify-center shadow-lg shadow-purple-500/30 transition-colors">
+        <button 
+          onClick={() => setAddTaskOpen(true)}
+          className="w-10 h-10 rounded-full bg-[#8B5CF6] hover:bg-[#7c3aed] flex items-center justify-center shadow-lg shadow-purple-500/30 transition-colors"
+        >
           <Plus className="w-6 h-6 text-white" />
         </button>
       </div>
@@ -112,45 +140,72 @@ export const Tasks = () => {
 
       {/* Tasks List */}
       <div className="space-y-3 px-1">
-        {filteredTasks.map((task) => (
-          <div 
-            key={task.id}
-            className={clsx(
-              "relative p-4 rounded-3xl border transition-all",
-              task.isCompleted ? "bg-green-700/10 border-green-300/10" : "bg-[#0f0f13]",
-              !task.isCompleted && (task.color || "border-white/5"),
-              "group"
-            )}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <button className="text-gray-500 hover:text-[#8B5CF6] transition-colors">
-                  {task.isCompleted 
-                    ? <CheckCircle2 className="w-6 h-6 text-green-500" /> 
-                    : <Circle className="w-6 h-6 text-purple-400/50" />
-                  }
-                </button>
-                
-                <div>
-                  <h3 className={clsx("font-bold text-base mb-0.5", task.isCompleted ? "text-gray-500 line-through" : "text-gray-200")}>
-                    {task.title}
-                  </h3>
-                  <p className="text-sm text-gray-500">{task.subject}</p>
+        {filteredTasks.map((task) => {
+          const status = getTaskStatus(task.deadline);
+          return (
+            <div 
+              key={task.id}
+              className={clsx(
+                "relative p-4 rounded-3xl border transition-all bg-[#0f0f13] group",
+                task.isCompleted ? "bg-green-700/10 border-green-300/10" : status.colorClass,
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => toggleTask(task.id)}
+                    className="text-gray-500 hover:text-[#8B5CF6] transition-colors"
+                  >
+                    {task.isCompleted 
+                      ? <CheckCircle2 className="w-6 h-6 text-green-500" /> 
+                      : <Circle className="w-6 h-6 text-purple-400/50" />
+                    }
+                  </button>
+                  
+                  <div className="flex flex-col">
+                    <h3 className={clsx(
+                      "font-bold text-lg leading-tight mb-1", 
+                      task.isCompleted ? "text-gray-500 line-through" : "text-white"
+                    )}>
+                      {task.subject}
+                    </h3>
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <div className="w-3 h-3 border-l border-b border-gray-600 rounded-bl-[4px] -mt-1 ml-0.5"></div>
+                      <p className={clsx(
+                        "text-sm font-medium",
+                        task.isCompleted && "line-through text-gray-600"
+                      )}>
+                        {task.title}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className={clsx(
+                    "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border",
+                    task.isCompleted ? "bg-green-500/10 border-green-500/20 text-green-400" : status.badgeClass
+                  )}>
+                    <Clock className="w-3.5 h-3.5" />
+                    {status.label}
+                  </div>
+                  
+                  <button 
+                    onClick={() => removeTask(task.id)}
+                    className="p-2 rounded-xl bg-red-500/5 text-red-500/40 hover:text-red-400 hover:bg-red-500/20 transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-
-              <div className={clsx(
-                "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border",
-                task.id === 1 ? "bg-amber-500/10 border-amber-500/20 text-amber-400" :
-                task.isCompleted ? "bg-green-500/10 border-green-500/20 text-green-400" :
-                "bg-white/5 border-white/10 text-gray-400"
-              )}>
-                <Clock className="w-3.5 h-3.5" />
-                {task.deadline}
-              </div>
             </div>
+          );
+        })}
+        {filteredTasks.length === 0 && (
+          <div className="py-12 text-center">
+            <p className="text-gray-500">Задач не найдено</p>
           </div>
-        ))}
+        )}
       </div>
     </motion.div>
   );

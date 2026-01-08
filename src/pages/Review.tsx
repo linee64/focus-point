@@ -1,6 +1,20 @@
-import { Bell, Sparkles, Upload, Link as LinkIcon, FileText } from 'lucide-react';
+import { useState } from 'react';
+import { Bell, Sparkles, Upload, Link as LinkIcon, FileText, Send } from 'lucide-react';
+import { useStore } from '../store/useStore';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const Review = () => {
+  const { setNotificationsOpen } = useStore();
+  const [videoUrl, setVideoUrl] = useState('');
+
+  const getYoutubeId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  const videoId = getYoutubeId(videoUrl);
+
   return (
     <div className="space-y-6 pb-20 relative">
       {/* Header */}
@@ -11,10 +25,13 @@ export const Review = () => {
           </div>
           <div>
             <h1 className="text-xl font-bold text-[#8B5CF6]">SleamAI</h1>
-            <p className="text-xs text-gray-400">Четверг, 1 Января</p>
+            <p className="text-xs text-gray-400">Суббота, 3 Января</p>
           </div>
         </div>
-        <button className="p-2 rounded-full bg-[#18181B] hover:bg-[#27272A] transition-colors border border-white/5 relative">
+        <button 
+          onClick={() => setNotificationsOpen(true)}
+          className="p-2 rounded-full bg-[#18181B] hover:bg-[#27272A] transition-colors border border-white/5 relative"
+        >
           <Bell className="w-5 h-5 text-gray-400" />
           <div className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-[#8B5CF6] rounded-full ring-2 ring-[#18181B]"></div>
         </button>
@@ -68,10 +85,41 @@ export const Review = () => {
             </div>
           </div>
           
+          <AnimatePresence>
+            {videoId && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden space-y-4"
+              >
+                <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10 bg-black/40 group">
+                  <img 
+                    src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                    alt="Video preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
+                    <span className="text-[10px] text-white/60 font-medium px-2 py-1 rounded bg-black/40 backdrop-blur-sm border border-white/10">
+                      YouTube Preview
+                    </span>
+                  </div>
+                </div>
+                
+                <button className="w-full bg-[#8B5CF6] hover:bg-[#7c3aed] text-white font-bold py-3 rounded-xl shadow-lg shadow-purple-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                  <Send className="w-4 h-4" />
+                  Отправить
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
           <div className="relative">
             <input 
               type="text" 
               placeholder="https://youtube.com/watch?v=..." 
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
               className="w-full bg-[#0B0B0F]/80 border border-white/10 rounded-xl py-3 px-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
             />
           </div>
