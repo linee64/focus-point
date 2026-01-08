@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Task, ScheduleEvent, UserSettings } from '../types';
+import { Task, ScheduleEvent, UserSettings, Note } from '../types';
 import { addDays, format } from 'date-fns';
 
 interface StoreState {
   hasOnboarded: boolean;
   tasks: Task[];
   schedule: ScheduleEvent[];
+  notes: Note[];
   settings: UserSettings;
   user?: { name: string; surname: string } | null;
   
@@ -26,6 +27,8 @@ interface StoreState {
   addTask: (task: Omit<Task, 'id' | 'isCompleted'>) => void;
   removeTask: (id: string) => void;
   toggleTask: (id: string) => void;
+  addNote: (note: Omit<Note, 'id' | 'createdAt'>) => void;
+  removeNote: (id: string) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
   logout: () => void;
 }
@@ -70,6 +73,7 @@ export const useStore = create<StoreState>()(
       hasOnboarded: false,
       tasks: mockTasks,
       schedule: mockSchedule,
+      notes: [],
       settings: {
         wakeUpTime: '07:00',
         bedTime: '23:00',
@@ -115,6 +119,14 @@ export const useStore = create<StoreState>()(
 
       toggleTask: (id) => set((state) => ({
         tasks: state.tasks.map(t => t.id === id ? { ...t, isCompleted: !t.isCompleted } : t)
+      })),
+
+      addNote: (note) => set((state) => ({
+        notes: [...state.notes, { ...note, id: Math.random().toString(36).substr(2, 9), createdAt: new Date().toISOString() }]
+      })),
+
+      removeNote: (id) => set((state) => ({
+        notes: state.notes.filter(n => n.id !== id)
       })),
 
       updateSettings: (newSettings) => set((state) => ({

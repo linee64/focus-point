@@ -164,3 +164,55 @@
 164→    - Implemented a smooth animated preview window using `framer-motion` that appears when a valid YouTube link is pasted.
 165→    - Added a "Send" button that appears alongside the preview.
 166→    - Styled the preview with glassmorphism effects and a "YouTube Preview" badge.
+167→- **Daily Routine Settings**:
+168→    - Added "Режим дня" (Daily Routine) option to the [Profile.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Profile.tsx).
+169→    - Created [DailyRoutineModal.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/components/DailyRoutineModal.tsx) for easy time configuration.
+170→    - Connected the modal to Zustand store's `updateSettings` for persistence.
+171→    - Styled inputs with dark color scheme and consistent icon accents.
+172→    - **Modal UI Improvements**:
+173→        - Moved the Daily Routine modal higher (top-[10%]) from the top edge.
+174→        - Standardized the header style (p-5, border-b) to match `AddTaskModal`, ensuring "Режим дня" is perfectly aligned to the left.
+175→        - Implemented a custom scrollable Time Picker to replace the native browser input.
+176→        - Aligned text to the left in time inputs for consistency with the app's design.
+177→        - Added icons next to labels for better visual categorization.
+178→- **Profile Cleanup & Feedback**:
+179→    - Removed "Settings" link and "Achievements" section from [Profile.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Profile.tsx).
+180→    - Added a new **Feedback Section** with:
+181→        - Interactive 5-star rating system using `lucide-react` stars.
+182→        - Textarea for user comments with glassmorphism styling.
+183→        - Dynamic "Send Feedback" button that activates only when both rating and text are provided.
+184→        - Integrated `MessageSquare` icon and blue color theme for the section.
+185→- **Profile Update (School Info & Achievements)**:
+186→    - Replaced "Sleep Mode" toggle with **School & Grade** input fields in [Profile.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Profile.tsx).
+187→        - Added `School` icon from `lucide-react`.
+188→        - Implemented local state for `school` and `grade`.
+189→    - Restored the **Achievements** section and positioned it before the Feedback section.
+190→        - Ensured all achievement cards use left text alignment for consistency.
+191→    - Removed unused `Moon` icon from imports.
+192→- **Interactive Study Block**:
+193→    - Converted the "School & Grade" section into an expandable component in [Profile.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Profile.tsx).
+194→    - Used `framer-motion`'s `AnimatePresence` and `motion.div` for smooth height animations.
+195→    - Added a rotating `ChevronRight` icon to indicate expansion state.
+196→    - Implemented a dynamic subtitle that shows the current school and grade when collapsed.
+197→    - Added labels and better spacing within the expanded view.
+198→- **UI Adjustments & Video Upload**:
+199→    - Changed the `School` icon color from purple to gray (`text-gray-400`) in [Profile.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Profile.tsx).
+200→    - Implemented video file selection in [Review.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Review.tsx):
+201→        - Added a hidden `input` of type `file` with `accept="video/*"`.
+202→        - Connected the "Upload Video" button to the hidden input using `useRef`.
+203→        - Added `handleFileChange` to process selected video files.
+204→- **Google Gemini Integration**:
+205→    - Installed `@google/generative-ai` SDK.
+206→    - Created [geminiService.ts](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/services/geminiService.ts) to handle API calls.
+207→    - Implemented `analyzeVideo` function supporting both YouTube URLs and file uploads.
+208→    - Updated [Review.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Review.tsx) with:
+209→        - `isAnalyzing` state for loading indication.
+210→        - `summary` state to store and display the generated Markdown content.
+211→        - Visual feedback using `Loader2` and `AnimatePresence`.
+212→        - Integrated `handleUrlSubmit` and `handleFileChange` with the Gemini service.
+213→- **AI Chat Navigation**:
+214→    - Created [AIChat.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/AIChat.tsx) for a dedicated chat-based analysis experience.
+215→    - Configured routing for `/ai-chat` in [App.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/App.tsx).
+216→    - Updated [Review.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Review.tsx) to redirect to the AI Chat with video data (URL or File) via `react-router-dom` state.
+217→    - Implemented real-time bot messaging and typing indicators in the chat interface.
+218→    - Moved the Gemini analysis logic from Review page to the Chat page for better UX.

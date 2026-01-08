@@ -31,3 +31,12 @@ export interface UserSettings {
   schoolStart: string;
   schoolEnd: string;
 }
+
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string; // ISO string
+  sourceUrl?: string;
+  type: 'video' | 'text' | 'file';
+}

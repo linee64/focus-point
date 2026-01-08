@@ -8,6 +8,7 @@ import { Schedule } from './pages/Schedule';
 import { useStore } from './store/useStore';
 import { Review } from './pages/Review';
 import { Profile } from './pages/Profile';
+import { AIChat } from './pages/AIChat';
 import { Notifications } from './components/Notifications';
 import { AddTaskModal } from './components/AddTaskModal';
 import { useEffect } from 'react';
@@ -29,6 +30,7 @@ function App() {
           <Route path="/deadlines" element={<Tasks />} />
           <Route path="/review" element={<Review />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/ai-chat" element={<AIChat />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </Layout>

@@ -5,21 +5,32 @@ import {
   Target,
   FileText,
   Sparkles,
-  Moon,
   LogOut,
   User,
   Check,
-  Trophy
+  Trophy,
+  Clock,
+  MessageSquare,
+  Star,
+  School
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useState } from 'react';
+import { DailyRoutineModal } from '../components/DailyRoutineModal';
 
 export const Profile = () => {
-  const { logout, setNotificationsOpen } = useStore();
+  const { logout, setNotificationsOpen, tasks, notes } = useStore();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [sleepModeEnabled, setSleepModeEnabled] = useState(false);
+  const [school, setSchool] = useState('');
+  const [grade, setGrade] = useState('');
+  const [isStudyOpen, setIsStudyOpen] = useState(false);
+  const [isDailyRoutineOpen, setIsDailyRoutineOpen] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const [rating, setRating] = useState(0);
+
+  const completedTasks = tasks.filter(t => t.isCompleted).length;
 
   return (
     <motion.div
@@ -27,6 +38,10 @@ export const Profile = () => {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6 pb-20"
     >
+      <DailyRoutineModal 
+        isOpen={isDailyRoutineOpen} 
+        onClose={() => setIsDailyRoutineOpen(false)} 
+      />
       {/* Header */}
       <header className="flex justify-between items-center pt-2 px-1">
         <div className="flex gap-3 items-center">
@@ -73,12 +88,12 @@ export const Profile = () => {
             </div>
             <div className="flex flex-col items-center gap-1 border-x border-white/5">
                 <Target className="w-5 h-5 text-blue-400 mb-1" />
-                <span className="text-lg font-bold">23</span>
+                <span className="text-lg font-bold">{completedTasks}</span>
                 <span className="text-[10px] text-gray-500 font-medium">Задач</span>
             </div>
             <div className="flex flex-col items-center gap-1">
                 <FileText className="w-5 h-5 text-purple-400 mb-1" />
-                <span className="text-lg font-bold">12</span>
+                <span className="text-lg font-bold">{notes.length}</span>
                 <span className="text-[10px] text-gray-500 font-medium">Конспектов</span>
             </div>
          </div>
@@ -92,7 +107,7 @@ export const Profile = () => {
         <div>
             <h3 className="font-bold mb-1">ИИ-анализ</h3>
             <p className="text-xs text-gray-400 leading-relaxed">
-                Ты создал 12 конспектов за этот месяц! Это на 40% больше, чем в прошлом. Так держать! 🎯
+                Ты создал {notes.length} конспектов за этот месяц! Это на 40% больше, чем в прошлом. Так держать! 🎯
             </p>
         </div>
       </div>
@@ -101,7 +116,7 @@ export const Profile = () => {
       <div className="space-y-2">
         {/* Notifications */}
         <div className="bg-[#18181B]/50 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex justify-between items-center">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-left">
                 <Bell className="w-5 h-5 text-gray-400" />
                 <div>
                     <div className="font-medium">Уведомления</div>
@@ -116,36 +131,83 @@ export const Profile = () => {
             </button>
         </div>
 
-        {/* Sleep Mode */}
-        <div className="bg-[#18181B]/50 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex justify-between items-center">
-            <div className="flex items-center gap-3">
-                <Moon className="w-5 h-5 text-gray-400" />
-                <div>
-                    <div className="font-medium">Режим сна</div>
-                    <div className="text-[10px] text-gray-500">Без уведомлений с 22:00 до 8:00</div>
-                </div>
-            </div>
+        {/* School & Grade (Expandable) */}
+        <div className="bg-[#18181B]/50 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden transition-all duration-300">
             <button 
-                onClick={() => setSleepModeEnabled(!sleepModeEnabled)}
-                className={`w-12 h-6 rounded-full relative transition-colors duration-200 ${sleepModeEnabled ? 'bg-[#8B5CF6]' : 'bg-gray-700'}`}
+                onClick={() => setIsStudyOpen(!isStudyOpen)}
+                className="w-full p-4 flex justify-between items-center hover:bg-white/5 transition-colors"
             >
-                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-200 ${sleepModeEnabled ? 'left-7' : 'left-1'}`}></div>
+                <div className="flex items-center gap-3 text-left">
+                    <div className="w-5 h-5 flex items-center justify-center">
+                        <School className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <div>
+                        <div className="font-medium">Учеба</div>
+                        <div className="text-[10px] text-gray-500">
+                            {school && grade ? `${school}, ${grade} класс` : 'Укажи свою школу и класс'}
+                        </div>
+                    </div>
+                </div>
+                <motion.div
+                    animate={{ rotate: isStudyOpen ? 90 : 0 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    <ChevronRight className="w-5 h-5 text-gray-500" />
+                </motion.div>
             </button>
+
+            <AnimatePresence>
+                {isStudyOpen && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    >
+                        <div className="px-4 pb-4 pt-0 space-y-3">
+                            <div className="h-[1px] bg-white/5 mb-3" />
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] text-gray-500 ml-1">Название школы</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Школа"
+                                        value={school}
+                                        onChange={(e) => setSchool(e.target.value)}
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] text-gray-500 ml-1">Класс</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Класс"
+                                        value={grade}
+                                        onChange={(e) => setGrade(e.target.value)}
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 transition-all"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
 
-        {/* Settings Link */}
-        <Link to="/settings" className="bg-[#18181B]/50 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex justify-between items-center group">
-            <div className="flex items-center gap-3">
-                <div className="w-5 h-5 flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
-                        <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M19.4 15C20.0627 14.3373 20.0627 13.2627 19.4 12.6L18.6 11.8C18.2329 11.4329 18.2329 10.8373 18.6 10.47L19.4 9.67005C20.0627 9.00731 20.0627 7.93279 19.4 7.27005L17.27 5.14005C16.6073 4.47731 15.5327 4.47731 14.87 5.14005L14.07 5.94005C13.7027 6.30731 13.1072 6.30731 12.74 5.94005L11.94 5.14005C11.2773 4.47731 10.2027 4.47731 9.54005 5.14005L7.41005 7.27005C6.74731 7.93279 6.74731 9.00731 7.41005 9.67005L8.21005 10.47C8.57731 10.8373 8.57731 11.4329 8.21005 11.8L7.41005 12.6C6.74731 13.2627 6.74731 14.3373 7.41005 15L9.54005 17.13C10.2027 17.7927 11.2773 17.7927 11.94 17.13L12.74 16.33C13.1072 15.9627 13.7027 15.9627 14.07 16.33L14.87 17.13C15.5327 17.7927 16.6073 17.7927 17.27 17.13L19.4 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+        {/* Daily Routine */}
+        <button 
+            onClick={() => setIsDailyRoutineOpen(true)}
+            className="w-full bg-[#18181B]/50 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex justify-between items-center group transition-colors hover:bg-white/5"
+        >
+            <div className="flex items-center gap-3 text-left">
+                <Clock className="w-5 h-5 text-gray-400" />
+                <div>
+                    <div className="font-medium">Режим дня</div>
+                    <div className="text-[10px] text-gray-500">Настроить время подъема, еды и сна</div>
                 </div>
-                <div className="font-medium">Настройки</div>
             </div>
             <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
-        </Link>
+        </button>
       </div>
 
       {/* Achievements */}
@@ -166,7 +228,7 @@ export const Profile = () => {
                         <Check className="w-3 h-3 text-black" strokeWidth={3} />
                     </div>
                 </div>
-                <div>
+                <div className="text-left">
                     <h4 className="font-bold text-sm">Первый конспект</h4>
                     <p className="text-xs text-gray-500">Создал первый конспект с ИИ</p>
                 </div>
@@ -179,7 +241,7 @@ export const Profile = () => {
                         <Check className="w-3 h-3 text-black" strokeWidth={3} />
                     </div>
                 </div>
-                <div>
+                <div className="text-left">
                     <h4 className="font-bold text-sm">Неделя без пропусков</h4>
                     <p className="text-xs text-gray-500">7 дней подряд заходил в приложение</p>
                 </div>
@@ -190,11 +252,58 @@ export const Profile = () => {
                 <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0">
                      <Trophy className="w-5 h-5 text-gray-500" />
                 </div>
-                <div>
+                <div className="text-left">
                     <h4 className="font-bold text-sm text-gray-400">Мастер дедлайнов</h4>
                     <p className="text-xs text-gray-600">Выполнил 10 задач вовремя</p>
                 </div>
             </div>
+        </div>
+      </div>
+
+      {/* Feedback Section */}
+      <div className="bg-[#18181B]/50 backdrop-blur-md p-5 rounded-3xl border border-white/10 space-y-4">
+        <div className="flex items-center gap-3 mb-2 px-1">
+            <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+                <h3 className="font-bold">Обратная связь</h3>
+                <p className="text-[10px] text-gray-500">Помоги нам стать лучше</p>
+            </div>
+        </div>
+
+        <div className="space-y-4">
+            <div className="flex justify-center gap-2 py-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                        key={star}
+                        onClick={() => setRating(star)}
+                        className="transition-transform active:scale-90"
+                    >
+                        <Star 
+                            className={`w-8 h-8 ${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-600'}`} 
+                        />
+                    </button>
+                ))}
+            </div>
+
+            <textarea
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="Чего тебе не хватает в приложении? Пиши сюда..."
+                className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 min-h-[100px] resize-none transition-all"
+            />
+
+            <button
+                disabled={!feedback.trim() || rating === 0}
+                className={`w-full py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] ${
+                    feedback.trim() && rating !== 0
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/20'
+                        : 'bg-white/5 text-gray-500 cursor-not-allowed border border-white/5'
+                }`}
+            >
+                Отправить отзыв
+            </button>
         </div>
       </div>
 
