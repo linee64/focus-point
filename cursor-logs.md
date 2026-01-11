@@ -98,121 +98,121 @@
         - Connected the "Add" button to open `AddScheduleModal`.
 - **Schedule & Data Management Overhaul**:
     - **Date Persistence**: Added `date` field to `ScheduleEvent` type and store.
-    - **Smart Filtering**: Implemented strict date filtering in `Schedule.tsx` to prevent events from appearing on every day.
-    - **Intelligent Auto-fill**:
-        - **Date**: Now automatically uses the selected date from the calendar when creating new events.
-        - **Time**: Implemented logic to auto-suggest the next available time slot based on existing events (45-min duration by default).
-        - **Content**: Created a `subjectsMap` with quick-selection buttons for common school subjects (Math, Physics, etc.). Selecting a subject automatically populates relevant subtasks.
-    - **UI Cleanup**: Removed redundant icons (MapPin, category tags) from the schedule list for a cleaner, more focused look.
-    - **Editing**: Fully implemented schedule event editing via the `AddScheduleModal`.
-108→    - **UI Polish (Onboarding)**:
-109→        - Replaced all gradient titles in `Onboarding.tsx` with solid purple (`#8B5CF6`) for better readability.
-110→        - Updated all input fields and selection buttons to use a blurred glassmorphism effect (`bg-white/5 backdrop-blur-md`).
-111→        - Standardized the visual style across all onboarding steps (Register, Login, Name Input, Activity Input, etc.).
-112→        - Verified that other pages (Dashboard, Schedule) follow the same design language without problematic gradients.
-113→    - **Navigation & Interactivity**:
-114→        - Ensured automatic redirect to "Dashboard" after successful registration/login in `Onboarding.tsx`.
-115→        - Implemented functional "Daily Check-in" section on `Dashboard.tsx` with mood selection, loading states, and submission feedback.
-116→        - Enhanced `Dashboard.tsx` UI with glassmorphism for the check-in section.
-117→- **Task & Deadline Management**:
-118→    - **Data Model Update**: Added `subject` field to `Task` interface in `src/types/index.ts`.
-119→    - **Store Improvements**:
-120→        - Added `removeTask` action to `useStore`.
-121→        - Updated `addTask` to store `subject` and `title` separately.
-122→        - Refreshed `mockTasks` with the new structure.
-123→    - **Dynamic Data Integration**:
-124→        - Replaced hardcoded task lists in `Tasks.tsx` and `Dashboard.tsx` with live data from the Zustand store.
-125→        - Tasks added via `AddTaskModal` now correctly appear in both the "Deadlines" tab and the "Dashboard" section.
-126→    - **Task Deletion**:
-127→        - Implemented a delete button (Trash icon) for each task in `Tasks.tsx` and `Dashboard.tsx`.
-128→        - Styled the delete button to be subtle yet accessible, with hover/active states.
-129→    - **UI Polish**:
-130→        - Added colorful borders and shadows to task items based on their type (Exam, Project, Homework).
-131→        - Improved task completion toggling logic.
-132→        - Standardized deadline date formatting using `date-fns`.
-133→- **Task Border Color Logic**:
-134→    - Implemented dynamic border colors based on remaining days in `Tasks.tsx` and `Dashboard.tsx`:
-135→        - **0-3 days**: Purple border and shadow (`#8B5CF6`).
-136→        - **4 days**: Yellow border and shadow.
-137→        - **5-9 days**: Green border and shadow.
-138→        - **10+ days**: Default subtle border.
-139→    - Integrated `differenceInDays` and `startOfDay` from `date-fns` for accurate calculations.
-140→    - Updated UI components to reflect these changes with smooth transitions and glassmorphism styling.
-141→- **Overdue Task Highlighting & Deadline Display**:
-142→    - Implemented red border and shadow for overdue tasks (days < 0).
-143→    - Replaced absolute date display (e.g., "27 Dec") with relative time (e.g., "3 дн.", "Сегодня", "Просрочено").
-144→    - Updated `Tasks.tsx` and `Dashboard.tsx` with consistent overdue styling.
-145→    - Adjusted text labels for better clarity (e.g., "Дедлайн" as a secondary label on Dashboard).
-146→- **Task UI Hierarchy Update**:
-147→    - Made `subject` the primary heading with larger, bolder font (`text-lg` in Tasks, `text-base` in Dashboard).
-148→    - Made `title` a sub-task with smaller font (`text-sm` / `text-xs`) and added a visual "sub-task" indicator (L-shaped arrow).
-149→    - Swapped positions of `subject` and `title` in the UI to prioritize the subject name.
-150→- **Fixed Add Task Functionality**:
-151→    - Added form validation to `AddTaskModal.tsx`: the submit button is now disabled until all fields (subject, title, date) are filled.
-152→    - Updated button styling to provide visual feedback for its disabled/enabled state.
-153→    - Changed date storage format to ISO string for better precision and compatibility with `parseISO`.
-154→    - Ensured the modal correctly resets and closes after successful task addition.
-155→- **Synchronized Deadline Colors**:
-156→    - Updated `getTaskStatus` and `getDeadlineInfo` to return consistent `badgeClass` styles.
-157→    - Deadline badges (labels like "Сегодня", "3 дн.") now match the card's border color (yellow, red, purple, green).
-158→    - Applied these dynamic styles across `Tasks.tsx` and `Dashboard.tsx`.
-159→- **Simplified Color Logic**:
-160→    - Tasks with 5 or more days remaining are now always green.
-161→    - Removed the 10-day limit for green highlighting to make long-term deadlines more encouraging.
-162→- **YouTube Preview in Review Page**:
-163→    - Added `videoUrl` state and `getYoutubeId` helper to [Review.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Review.tsx).
-164→    - Implemented a smooth animated preview window using `framer-motion` that appears when a valid YouTube link is pasted.
-165→    - Added a "Send" button that appears alongside the preview.
-166→    - Styled the preview with glassmorphism effects and a "YouTube Preview" badge.
-167→- **Daily Routine Settings**:
-168→    - Added "Режим дня" (Daily Routine) option to the [Profile.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Profile.tsx).
-169→    - Created [DailyRoutineModal.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/components/DailyRoutineModal.tsx) for easy time configuration.
-170→    - Connected the modal to Zustand store's `updateSettings` for persistence.
-171→    - Styled inputs with dark color scheme and consistent icon accents.
-172→    - **Modal UI Improvements**:
-173→        - Moved the Daily Routine modal higher (top-[10%]) from the top edge.
-174→        - Standardized the header style (p-5, border-b) to match `AddTaskModal`, ensuring "Режим дня" is perfectly aligned to the left.
-175→        - Implemented a custom scrollable Time Picker to replace the native browser input.
-176→        - Aligned text to the left in time inputs for consistency with the app's design.
-177→        - Added icons next to labels for better visual categorization.
-178→- **Profile Cleanup & Feedback**:
-179→    - Removed "Settings" link and "Achievements" section from [Profile.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Profile.tsx).
-180→    - Added a new **Feedback Section** with:
-181→        - Interactive 5-star rating system using `lucide-react` stars.
-182→        - Textarea for user comments with glassmorphism styling.
-183→        - Dynamic "Send Feedback" button that activates only when both rating and text are provided.
-184→        - Integrated `MessageSquare` icon and blue color theme for the section.
-185→- **Profile Update (School Info & Achievements)**:
-186→    - Replaced "Sleep Mode" toggle with **School & Grade** input fields in [Profile.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Profile.tsx).
-187→        - Added `School` icon from `lucide-react`.
-188→        - Implemented local state for `school` and `grade`.
-189→    - Restored the **Achievements** section and positioned it before the Feedback section.
-190→        - Ensured all achievement cards use left text alignment for consistency.
-191→    - Removed unused `Moon` icon from imports.
-192→- **Interactive Study Block**:
-193→    - Converted the "School & Grade" section into an expandable component in [Profile.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Profile.tsx).
-194→    - Used `framer-motion`'s `AnimatePresence` and `motion.div` for smooth height animations.
-195→    - Added a rotating `ChevronRight` icon to indicate expansion state.
-196→    - Implemented a dynamic subtitle that shows the current school and grade when collapsed.
-197→    - Added labels and better spacing within the expanded view.
-198→- **UI Adjustments & Video Upload**:
-199→    - Changed the `School` icon color from purple to gray (`text-gray-400`) in [Profile.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Profile.tsx).
-200→    - Implemented video file selection in [Review.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Review.tsx):
-201→        - Added a hidden `input` of type `file` with `accept="video/*"`.
-202→        - Connected the "Upload Video" button to the hidden input using `useRef`.
-203→        - Added `handleFileChange` to process selected video files.
-204→- **Google Gemini Integration**:
-205→    - Installed `@google/generative-ai` SDK.
-206→    - Created [geminiService.ts](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/services/geminiService.ts) to handle API calls.
-207→    - Implemented `analyzeVideo` function supporting both YouTube URLs and file uploads.
-208→    - Updated [Review.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Review.tsx) with:
-209→        - `isAnalyzing` state for loading indication.
-210→        - `summary` state to store and display the generated Markdown content.
-211→        - Visual feedback using `Loader2` and `AnimatePresence`.
-212→        - Integrated `handleUrlSubmit` and `handleFileChange` with the Gemini service.
-213→- **AI Chat Navigation**:
-214→    - Created [AIChat.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/AIChat.tsx) for a dedicated chat-based analysis experience.
-215→    - Configured routing for `/ai-chat` in [App.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/App.tsx).
-216→    - Updated [Review.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Review.tsx) to redirect to the AI Chat with video data (URL or File) via `react-router-dom` state.
-217→    - Implemented real-time bot messaging and typing indicators in the chat interface.
-218→    - Moved the Gemini analysis logic from Review page to the Chat page for better UX.
+
+## 2026-01-09
+- **UI Adjustments**:
+    - Changed School icon color to gray in `Profile.tsx`.
+    - Added hidden file input to `Review.tsx`'s "Загрузить видео" button for device file selection.
+- **Gemini Integration**:
+    - Installed `@google/generative-ai` SDK.
+    - Created `geminiService.ts` for AI video analysis.
+    - Updated model to `gemini-1.5-flash` for better performance and availability.
+    - Improved error handling with regional and API key diagnostic messages.
+- **AI Chat Experience**:
+    - Created `AIChat.tsx` for an interactive video summarization experience.
+    - Added `/ai-chat` route to `App.tsx`.
+    - Implemented state transfer from `Review.tsx` to `AIChat.tsx` using `react-router-dom`.
+    - Added typing indicators and structured markdown summary rendering in the chat.
+- **Gemini Troubleshooting**:
+    - Updated model name to `gemini-1.5-flash-latest` for improved API compatibility.
+    - Implemented `console.dir(error)` and detailed logging in `geminiService.ts` to debug 404/403 errors.
+- **Gemini Model Stability & Fallback**:
+    - Switched to standard `gemini-1.5-flash` model name.
+    - Added automatic fallback to `gemini-pro` if `gemini-1.5-flash` is not available (404 error).
+    - Refactored `analyzeVideo` to use a retryable `tryModel` pattern.
+- **AIChat UI Fixes**:
+    - Fixed "Duplicate key" error in React by using `Date.now()` for message IDs.
+    - Prevented double analysis in development mode using `useRef` guard.
+- **Gemini Model Redundancy**:
+    - Implemented iterative model fallback: `gemini-1.5-flash` -> `gemini-1.5-pro` -> `gemini-1.0-pro`.
+    - Improved error messaging for API key and regional restrictions.
+    - Added console warnings for failed model attempts to aid debugging.
+- **Gemini Error Visibility**:
+    - Refactored `analyzeVideo` to bubble up the exact last error message to the user.
+    - Added explicit model prefixing (`models/`) to fallback list.
+    - Improved UX for regional and API key error scenarios.
+- **Gemini Service Reset**:
+    - Simplified `geminiService.ts` to use only `gemini-1.5-flash`.
+    - Replaced the hardcoded/leaked API key with a placeholder and instructions.
+    - Added clear diagnostic messages for 404/403 errors to guide the user to Google AI Studio.
+- **Smart Filtering**: Implemented strict date filtering in `Schedule.tsx` to prevent events from appearing on every day.
+- **Intelligent Auto-fill**:
+    - **Date**: Now automatically uses the selected date from the calendar when creating new events.
+    - **Time**: Implemented logic to auto-suggest the next available time slot based on existing events (45-min duration by default).
+    - **Content**: Created a `subjectsMap` with quick-selection buttons for common school subjects (Math, Physics, etc.). Selecting a subject automatically populates relevant subtasks.
+- **UI Cleanup**: Removed redundant icons (MapPin, category tags) from the schedule list for a cleaner, more focused look.
+- **Editing**: Fully implemented schedule event editing via the `AddScheduleModal`.
+- **UI Polish (Onboarding)**:
+    - Replaced all gradient titles in `Onboarding.tsx` with solid purple (`#8B5CF6`) for better readability.
+    - Updated all input fields and selection buttons to use a blurred glassmorphism effect (`bg-white/5 backdrop-blur-md`).
+    - Standardized the visual style across all onboarding steps (Register, Login, Name Input, Activity Input, etc.).
+    - Verified that other pages (Dashboard, Schedule) follow the same design language without problematic gradients.
+- **Navigation & Interactivity**:
+    - Ensured automatic redirect to "Dashboard" after successful registration/login in `Onboarding.tsx`.
+    - Implemented functional "Daily Check-in" section on `Dashboard.tsx` with mood selection, loading states, and submission feedback.
+    - Enhanced `Dashboard.tsx` UI with glassmorphism for the check-in section.
+- **Task & Deadline Management**:
+    - **Data Model Update**: Added `subject` field to `Task` interface in `src/types/index.ts`.
+    - **Store Improvements**:
+        - Added `removeTask` action to `useStore`.
+        - Updated `addTask` to store `subject` and `title` separately.
+        - Refreshed `mockTasks` with the new structure.
+    - **Dynamic Data Integration**:
+        - Replaced hardcoded task lists in `Tasks.tsx` and `Dashboard.tsx` with live data from the Zustand store.
+        - Tasks added via `AddTaskModal` now correctly appear in both the "Deadlines" tab and the "Dashboard" section.
+    - **Task Deletion**:
+        - Implemented a delete button (Trash icon) for each task in `Tasks.tsx` and `Dashboard.tsx`.
+        - Styled the delete button to be subtle yet accessible, with hover/active states.
+    - **UI Polish**:
+        - Added colorful borders and shadows to task items based on their type (Exam, Project, Homework).
+        - Improved task completion toggling logic.
+        - Standardized deadline date formatting using `date-fns`.
+- **Task Border Color Logic**:
+    - Implemented dynamic border colors based on remaining days in `Tasks.tsx` and `Dashboard.tsx`:
+        - **0-3 days**: Purple border and shadow (`#8B5CF6`).
+        - **4 days**: Yellow border and shadow.
+        - **5-9 days**: Green border and shadow.
+        - **10+ days**: Default subtle border.
+    - Integrated `differenceInDays` and `startOfDay` from `date-fns` for accurate calculations.
+    - Updated UI components to reflect these changes with smooth transitions and glassmorphism styling.
+- **Overdue Task Highlighting & Deadline Display**:
+    - Implemented red border and shadow for overdue tasks (days < 0).
+    - Replaced absolute date display (e.g., "27 Dec") with relative time (e.g., "3 дн.", "Сегодня", "Просрочено").
+    - Updated `Tasks.tsx` and `Dashboard.tsx` with consistent overdue styling.
+    - Adjusted text labels for better clarity (e.g., "Дедлайн" as a secondary label on Dashboard).
+- **Task UI Hierarchy Update**:
+    - Made `subject` the primary heading with larger, bolder font (`text-lg` in Tasks, `text-base` in Dashboard).
+    - Made `title` a sub-task with smaller font (`text-sm` / `text-xs`) and added a visual "sub-task" indicator (L-shaped arrow).
+    - Swapped positions of `subject` and `title` in the UI to prioritize the subject name.
+- **Fixed Add Task Functionality**:
+    - Added form validation to `AddTaskModal.tsx`: the submit button is now disabled until all fields (subject, title, date) are filled.
+    - Updated button styling to provide visual feedback for its disabled/enabled state.
+    - Changed date storage format to ISO string for better precision and compatibility with `parseISO`.
+
+## 2026-01-10
+- **Backend Implementation (Video Summarizer)**:
+    - Created `backend` directory with FastAPI application.
+    - Integrated `yt-dlp` for audio extraction and `youtube-transcript-api` for subtitle retrieval.
+    - Implemented local transcription using `faster-whisper` (small model) as a fallback for videos without subtitles.
+    - Integrated Google Gemini 2.0 (Gemini-2.0-flash-exp) for AI-powered video summarization.
+    - Added text processing utilities for cleaning and formatting transcripts.
+    - Implemented `POST /summarize` endpoint.
+    - Provided `.env.example` and `requirements.txt` for local setup.
+
+### Ошибки и их решения
+- **Проблема**: `ffmpeg/ffprobe not found` при работе `yt-dlp`.
+- **Решение**: Использована библиотека `imageio-ffmpeg` для автоматической поставки `ffmpeg`. Отключены встроенные пост-процессоры `yt-dlp` (которые требуют `ffprobe`) и реализована ручная конвертация аудио через `ffmpeg` напрямую в `transcriber.py`.
+
+## 2026-01-11
+- **Полная очистка бэкенда**:
+    - Удалены все файлы и папки в директории `backend/` для создания чистой архитектуры.
+- **Реализация модуля транскрипции (MVP)**:
+    - Создана структура: `backend/services/transcriber.py`, `config.py`, `utils.py`, `main.py`.
+    - **Оптимизация скорости**: 
+        - `yt-dlp` настроен на скачивание аудио в 96kbps и 10 потоков.
+        - `faster-whisper` (модель `tiny`) с `beam_size=1` для мгновенной локальной работы.
+    - **Гибридный подход**: Сначала попытка получить субтитры через API (мгновенно), затем скачивание аудио и транскрибация.
+    - Использован `imageio-ffmpeg` для независимости от системного ffmpeg.
+- **API**: Реализован эндпоинт `POST /transcribe`.
+
+```

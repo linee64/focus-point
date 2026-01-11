@@ -20,8 +20,9 @@ export const AIChat = () => {
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [displayedSummary, setDisplayedSummary] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const hasStarted = useRef(false);
 
   useEffect(() => {
     if (!videoUrl && !videoFile) {
@@ -29,10 +30,13 @@ export const AIChat = () => {
       return;
     }
 
+    if (hasStarted.current) return;
+    hasStarted.current = true;
+
     const startAnalysis = async () => {
       const initialMessages: Message[] = [
         {
-          id: '1',
+          id: `msg-${Date.now()}-1`,
           role: 'bot',
           content: 'Привет! Я получил твое видео. Сейчас я его внимательно изучу и составлю подробный конспект. Это займет несколько секунд... ⏳'
         }
@@ -44,19 +48,19 @@ export const AIChat = () => {
         const result = await analyzeVideo(videoUrl || videoFile, !!videoUrl);
         
         // Сохраняем конспект в хранилище
-        const title = videoFile ? (videoFile as File).name : (videoUrl.split('v=')[1]?.split('&')[0] || 'Видео конспект');
+        const title = videoFile ? (videoFile as File).name : "Конспект видео";
         addNote({
           title: title,
           content: result,
           type: videoFile ? 'file' : 'video',
-          sourceUrl: videoUrl
+          sourceUrl: typeof videoUrl === 'string' ? videoUrl : undefined
         });
 
         // Эффект печатания для конспекта
         setMessages(prev => [
           ...prev,
           {
-            id: '2',
+            id: `msg-${Date.now()}-2`,
             role: 'bot',
             content: result,
             type: 'summary'
@@ -68,7 +72,7 @@ export const AIChat = () => {
           setMessages(prev => [
             ...prev,
             {
-              id: '3',
+              id: `msg-${Date.now()}-3`,
               role: 'bot',
               content: 'Конспект готов и сохранен в твои заметки! Надеюсь, он поможет тебе в учебе. Если нужно что-то уточнить, я всегда здесь. 🎓'
             }
@@ -79,7 +83,7 @@ export const AIChat = () => {
         setMessages(prev => [
           ...prev,
           {
-            id: 'error',
+            id: `msg-${Date.now()}-err`,
             role: 'bot',
             content: error.message || 'Извини, произошла ошибка при анализе видео. Попробуй еще раз или проверь ссылку. 😕'
           }

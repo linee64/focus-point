@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+yt-dlp
+youtube-transcript-api
+pywhispercpp
+imageio-ffmpeg
+python-dotenv
+pydantic
