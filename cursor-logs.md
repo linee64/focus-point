@@ -97,7 +97,7 @@
         - Added week navigation (Previous/Next week).
         - Connected the "Add" button to open `AddScheduleModal`.
 - **Schedule & Data Management Overhaul**:
-    - **Date Persistence**: Added `date` field to `ScheduleEvent` type and store.
+        - **Date Persistence**: Added `date` field to `ScheduleEvent` type and store.
 
 ## 2026-01-09
 - **UI Adjustments**:
@@ -215,4 +215,17 @@
     - Использован `imageio-ffmpeg` для независимости от системного ffmpeg.
 - **API**: Реализован эндпоинт `POST /transcribe`.
 
-```
+## 2026-01-12
+- **Local YouTube Transcription MVP**:
+    - Created FastAPI backend on port 8001.
+    - Integrated `pywhispercpp` for local speech-to-text (avoiding torch dependency issues).
+    - Implemented YouTube transcript fallback: manual -> auto-generated -> local transcription via `yt-dlp` and Whisper.
+    - Optimized audio download with `yt-dlp` (96kbps, WAV postprocessing, concurrent fragments).
+- **Summarization & UI Enhancements**:
+    - Implemented `SummarizationService` with keyword extraction and Markdown structure.
+    - Added "Download HTML" feature: backend generates styled HTML from Markdown, frontend allows downloading the file.
+    - Improved summarization quality by filtering mathematical "noise" (e.g., "квадрате минус 6 умножить на 3...") and blogger intros.
+    - Integrated `react-markdown` in `AIChat.tsx` for beautiful note rendering.
+- **Note Management**:
+    - Added "Delete Note" functionality on the Review page with a confirmation dialog.
+    - Fixed CORS and port conflict issues (switched to 8001/8002 during testing).

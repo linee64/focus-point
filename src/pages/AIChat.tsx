@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ArrowLeft, Send, User, Bot, Loader2, FileText, CheckCircle2 } from 'lucide-react';
+import { Sparkles, ArrowLeft, Send, User, Bot, Loader2, FileText, CheckCircle2, Download } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { analyzeVideo } from '../services/geminiService';
 import { useStore } from '../store/useStore';
 
@@ -47,16 +48,9 @@ export const AIChat = () => {
       try {
         const result = await analyzeVideo(videoUrl || videoFile, !!videoUrl);
         
-        // Сохраняем конспект в хранилище
-        const title = videoFile ? (videoFile as File).name : "Конспект видео";
-        addNote({
-          title: title,
-          content: result,
-          type: videoFile ? 'file' : 'video',
-          sourceUrl: typeof videoUrl === 'string' ? videoUrl : undefined
-        });
+        setIsTyping(false);
 
-        // Эффект печатания для конспекта
+        // Добавляем конспект
         setMessages(prev => [
           ...prev,
           {
@@ -66,6 +60,15 @@ export const AIChat = () => {
             type: 'summary'
           }
         ]);
+
+        // Сохраняем конспект в хранилище
+        const title = videoFile ? (videoFile as File).name : "Конспект видео";
+        addNote({
+          title: title,
+          content: result,
+          type: videoFile ? 'file' : 'video',
+          sourceUrl: typeof videoUrl === 'string' ? videoUrl : undefined
+        });
         
         // Добавляем финальное сообщение
         setTimeout(() => {
@@ -97,36 +100,69 @@ export const AIChat = () => {
   }, [videoUrl, videoFile, navigate, addNote]);
 
   useEffect(() => {
-    if (scrollRef.current) {
+    // Авто-скролл только для новых коротких сообщений, но не для конспекта
+    const lastMessage = messages[messages.length - 1];
+    if (scrollRef.current && lastMessage && lastMessage.type !== 'summary') {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
+  const handleDownload = async (content: string) => {
+    try {
+      const response = await fetch('http://localhost:8002/generate-html', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          markdown_text: content,
+          title: videoFile ? (videoFile as File).name : "Конспект видео"
+        }),
+      });
+
+      if (!response.ok) throw new Error('Ошибка при генерации файла');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `summary-${Date.now()}.html`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Не удалось скачать файл');
+    }
+  };
+
   return (
-    <div className="flex flex-col h-screen bg-[#0B0B0F] text-white">
-      {/* Header */}
-      <header className="p-4 border-b border-white/5 flex items-center gap-4 bg-[#18181B]/50 backdrop-blur-md sticky top-0 z-50">
-        <button onClick={() => navigate('/review')} className="p-2 hover:bg-white/5 rounded-full transition-colors">
-          <ArrowLeft className="w-5 h-5" />
+    <div className="flex flex-col h-screen bg-[#0B0B0F] text-white overflow-hidden">
+      {/* Floating Header */}
+      <div className="absolute top-4 left-4 right-4 z-50 flex items-center justify-between pointer-events-none">
+        <button 
+          onClick={() => navigate('/review')} 
+          className="p-3 bg-[#18181B]/80 backdrop-blur-xl border border-white/10 rounded-2xl hover:bg-[#27272A] transition-all pointer-events-auto shadow-2xl group flex items-center gap-2"
+        >
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-xs font-bold uppercase tracking-wider pr-1">В меню</span>
         </button>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <Sparkles className="w-5 h-5 text-white" />
+        
+        <div className="p-3 bg-[#18181B]/80 backdrop-blur-xl border border-white/10 rounded-2xl pointer-events-auto shadow-2xl flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-white" />
           </div>
-          <div>
-            <h1 className="font-bold">ИИ-Тьютор</h1>
-            <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Анализирует видео</span>
-            </div>
+          <div className="hidden sm:block pr-2">
+            <h1 className="text-xs font-bold">SleamAI</h1>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Chat Area */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide"
+        className="flex-1 overflow-y-auto p-4 pt-24 space-y-6 scrollbar-hide"
       >
         <AnimatePresence initial={false}>
           {messages.map((message) => (
@@ -154,10 +190,17 @@ export const AIChat = () => {
                         <FileText className="w-4 h-4" />
                         <span className="text-xs font-bold uppercase tracking-wider">Готовый конспект</span>
                       </div>
-                      <div className="prose prose-invert prose-sm max-w-none whitespace-pre-wrap leading-relaxed">
-                        {message.content}
+                      <div className="prose prose-invert prose-sm max-w-none leading-relaxed">
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
                       </div>
-                      <div className="flex justify-end pt-2">
+                      <div className="flex justify-between items-center pt-4 border-t border-white/5">
+                        <button 
+                          onClick={() => handleDownload(message.content)}
+                          className="flex items-center gap-2 text-xs font-medium text-purple-400 hover:text-purple-300 transition-colors bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1.5 rounded-lg"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          Скачать HTML
+                        </button>
                         <div className="flex items-center gap-1 text-[10px] text-green-400 bg-green-400/10 px-2 py-1 rounded-full">
                           <CheckCircle2 className="w-3 h-3" />
                           Сгенерировано ИИ

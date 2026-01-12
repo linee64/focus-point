@@ -1,11 +1,11 @@
 import { useState, useRef } from 'react';
-import { Bell, Sparkles, Upload, Link as LinkIcon, FileText, Send, Loader2 } from 'lucide-react';
+import { Bell, Sparkles, Upload, Link as LinkIcon, FileText, Send, Trash2 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 export const Review = () => {
-  const { setNotificationsOpen, notes } = useStore();
+  const { setNotificationsOpen, notes, removeNote } = useStore();
   const navigate = useNavigate();
   const [videoUrl, setVideoUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -170,9 +170,20 @@ export const Review = () => {
                       {new Date(note.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}
                     </p>
                   </div>
-                  <button className="p-2 rounded-lg bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Send className="w-4 h-4 text-gray-400" />
-                  </button>
+                  <div className="flex gap-2">
+                    <button className="p-2 rounded-lg bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-purple-500/20 hover:text-purple-400">
+                      <Send className="w-4 h-4 text-gray-400" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeNote(note.id);
+                      }}
+                      className="p-2 rounded-lg bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20 hover:text-red-400"
+                    >
+                      <Trash2 className="w-4 h-4 text-gray-400" />
+                    </button>
+                  </div>
                 </motion.div>
               ))}
             </div>

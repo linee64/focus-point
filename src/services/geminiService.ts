@@ -10,7 +10,8 @@ export const analyzeVideo = async (videoSource: string | File, isUrl: boolean = 
   }
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/summarize', {
+    // Используем наш бэкенд для транскрибации и суммаризации
+    const response = await fetch('http://127.0.0.1:8002/summarize', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -20,16 +21,18 @@ export const analyzeVideo = async (videoSource: string | File, isUrl: boolean = 
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || 'Ошибка при получении конспекта от сервера');
+      throw new Error(errorData.detail || 'Ошибка при обработке видео на бэкенде');
     }
 
     const data = await response.json();
+    
+    // Возвращаем структурированный конспект
     return data.summary;
   } catch (error: any) {
-    console.error("--- Backend API Error ---", error);
+    console.error("Error in analyzeVideo:", error);
     
     if (error.message?.includes("Failed to fetch")) {
-      throw new Error("Не удалось подключиться к серверу. Убедитесь, что бэкенд запущен (python main.py)");
+      throw new Error("Не удалось подключиться к серверу. Убедитесь, что бэкенд запущен (python -m uvicorn backend.main:app --port 8002)");
     }
     
     throw new Error(error.message || "Произошла ошибка при обработке видео на сервере.");
