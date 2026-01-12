@@ -38,3 +38,29 @@
     opacity: 1;
   }
 }
+
+/* KaTeX Enhancements */
+.katex-display {
+  @apply my-4 overflow-x-auto overflow-y-hidden py-2;
+  display: block !important;
+}
+
+.katex {
+  @apply text-inherit;
+  font-size: 1.15em !important;
+  line-height: 1.2 !important;
+  text-indent: 0 !important;
+}
+
+.prose .katex {
+  color: #c084fc !important; /* purple-400 */
+}
+
+.prose .katex-display .katex {
+  @apply text-white;
+}
+
+/* Фикс для корректного отображения внутри prose */
+.prose .katex-display {
+  margin: 1.5em 0 !important;
+}

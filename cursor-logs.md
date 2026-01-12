@@ -163,7 +163,7 @@
     - **Task Deletion**:
         - Implemented a delete button (Trash icon) for each task in `Tasks.tsx` and `Dashboard.tsx`.
         - Styled the delete button to be subtle yet accessible, with hover/active states.
-    - **UI Polish**:
+- **UI Polish**:
         - Added colorful borders and shadows to task items based on their type (Exam, Project, Homework).
         - Improved task completion toggling logic.
         - Standardized deadline date formatting using `date-fns`.
@@ -205,27 +205,35 @@
 
 ## 2026-01-11
 - **Полная очистка бэкенда**:
-    - Удалены все файлы и папки в директории `backend/` для создания чистой архитектуры.
-- **Реализация модуля транскрипции (MVP)**:
-    - Создана структура: `backend/services/transcriber.py`, `config.py`, `utils.py`, `main.py`.
-    - **Оптимизация скорости**: 
-        - `yt-dlp` настроен на скачивание аудио в 96kbps и 10 потоков.
-        - `faster-whisper` (модель `tiny`) с `beam_size=1` для мгновенной локальной работы.
-    - **Гибридный подход**: Сначала попытка получить субтитры через API (мгновенно), затем скачивание аудио и транскрибация.
-    - Использован `imageio-ffmpeg` для независимости от системного ffmpeg.
-- **API**: Реализован эндпоинт `POST /transcribe`.
+    - Убраны лишние логи.
+    - Исправлены пути к файлам.
 
 ## 2026-01-12
-- **Local YouTube Transcription MVP**:
-    - Created FastAPI backend on port 8001.
-    - Integrated `pywhispercpp` for local speech-to-text (avoiding torch dependency issues).
-    - Implemented YouTube transcript fallback: manual -> auto-generated -> local transcription via `yt-dlp` and Whisper.
-    - Optimized audio download with `yt-dlp` (96kbps, WAV postprocessing, concurrent fragments).
-- **Summarization & UI Enhancements**:
-    - Implemented `SummarizationService` with keyword extraction and Markdown structure.
-    - Added "Download HTML" feature: backend generates styled HTML from Markdown, frontend allows downloading the file.
-    - Improved summarization quality by filtering mathematical "noise" (e.g., "квадрате минус 6 умножить на 3...") and blogger intros.
-    - Integrated `react-markdown` in `AIChat.tsx` for beautiful note rendering.
-- **Note Management**:
-    - Added "Delete Note" functionality on the Review page with a confirmation dialog.
-    - Fixed CORS and port conflict issues (switched to 8001/8002 during testing).
+- **Интеграция Gemini AI**:
+    - Подключен Google Gemini API через `google-generativeai`.
+    - Создан `gemini_service.py` для обработки видео и чата.
+    - Реализована суммаризация видео (YouTube и локальные файлы) с использованием ИИ.
+    - Добавлен fallback на локальную суммаризацию (BART) при ошибках API.
+- **Улучшение рендеринга формул**:
+    - Интегрированы `remark-math` и `rehype-katex` для отображения LaTeX формул в Markdown.
+    - Добавлены стили KaTeX во фронтенд и бэкенд (для экспорта).
+    - Настроен автоматический рендеринг формул в экспортируемом HTML.
+    - **Оптимизация читаемости**: Улучшены CSS-стили для формул (цвет, размер, отступы), обновлен промпт ИИ для принудительного использования пробелов вокруг LaTeX-символов для корректного парсинга.
+- **Экспорт в Word**:
+    - Реализован экспорт конспектов в формат `.docx` с использованием библиотеки `python-docx`.
+    - Добавлен эндпоинт `/generate-docx` на бэкенде с базовым парсингом Markdown.
+225- **Экспорт в Word (Отменено)**:
+226- **Исправление ошибок**:
+227- Исправлена критическая ошибка `NameError: name 'R' is not defined` в `summarizer.py`. Ошибка возникала из-за использования f-строки для промпта, где `\mathbb{R}` интерпретировалось как обращение к переменной `R`. Исправлено путем экранирования фигурных скобок (`\mathbb{{R}}`).
+228- **Удаление функций экспорта**:
+229- По запросу пользователя полностью удалены функции экспорта конспектов в Word (.docx) и HTML.
+230- Удалены эндпоинты `/generate-html` и `/generate-docx` на бэкенде.
+231- Удалена логика скачивания и кнопки "Скачать HTML"/"Скачать Word" из интерфейса `AIChat.tsx`.
+232- Очищены зависимости бэкенда от библиотек `markdown` и `python-docx`.
+233- **Обновление UI AI чата**:
+234- Страница `AIChat.tsx` теперь отображается на весь экран (без ограничения `max-w-md` на десктопе).
+235- Скрыто нижнее навигационное меню (`BottomNav`) на странице чата.
+236- Удалены фоновые декоративные элементы (blur blobs) и внешние отступы для страницы чата в `Layout.tsx`.
+237- **Исправление прокрутки**:
+238- Отключена прокрутка в родительском `Layout` для страницы `AIChat`, чтобы избежать "черного экрана" при скролле.
+239- Внутренняя область чата теперь корректно занимает 100% высоты контейнера.

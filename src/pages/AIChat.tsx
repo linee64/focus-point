@@ -3,7 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ArrowLeft, Send, User, Bot, Loader2, FileText, CheckCircle2, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { analyzeVideo } from '../services/geminiService';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import { analyzeVideo, chatWithAI } from '../services/geminiService';
 import { useStore } from '../store/useStore';
 
 interface Message {
@@ -20,14 +22,23 @@ export const AIChat = () => {
   const { videoUrl, videoFile } = location.state || {};
   
   const [messages, setMessages] = useState<Message[]>([]);
+  const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [typingStatus, setTypingStatus] = useState('ИИ печатает...');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const hasStarted = useRef(false);
 
   useEffect(() => {
+    // Если видео нет, просто приветствуем пользователя
     if (!videoUrl && !videoFile) {
-      navigate('/review');
+      if (messages.length === 0) {
+        setMessages([{
+          id: `msg-${Date.now()}`,
+          role: 'bot',
+          content: 'Привет! Я твой личный помощник SleamAI. Ты можешь просто пообщаться со мной или скинуть ссылку на видео для создания конспекта. Чем могу помочь? 😊'
+        }]);
+      }
       return;
     }
 
@@ -43,6 +54,7 @@ export const AIChat = () => {
         }
       ];
       setMessages(initialMessages);
+      setTypingStatus('Анализирую видео...');
       setIsTyping(true);
 
       try {
@@ -137,8 +149,101 @@ export const AIChat = () => {
     }
   };
 
+  const handleDownloadDocx = async (content: string) => {
+    try {
+      const response = await fetch('http://localhost:8002/generate-docx', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          markdown_text: content,
+          title: videoFile ? (videoFile as File).name : "Конспект видео"
+        }),
+      });
+
+      if (!response.ok) throw new Error('Ошибка при генерации файла');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `summary-${Date.now()}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Не удалось скачать файл');
+    }
+  };
+
+  const formatContent = (content: string) => {
+    // Добавляем пробелы вокруг одиночных $, если их нет, для корректного парсинга remark-math
+    // Но не трогаем $$, которые используются для блочных формул
+    return content.replace(/(?<!\$)\$([^\$\n]+)\$(?!\$)/g, ' $ $1 $ ');
+  };
+
+  const MarkdownComponent = ({ content }: { content: string }) => (
+    <div className="prose prose-invert prose-sm max-w-none leading-relaxed prose-p:my-2 prose-headings:mb-3 prose-headings:mt-6">
+      <ReactMarkdown 
+        remarkPlugins={[remarkMath]} 
+        rehypePlugins={[rehypeKatex]}
+        components={{
+          p: ({children}) => <p className="mb-2 last:mb-0">{children}</p>,
+        }}
+      >
+        {formatContent(content)}
+      </ReactMarkdown>
+    </div>
+  );
+
+  const handleSendMessage = async () => {
+    if (!inputText.trim() || isTyping) return;
+
+    const userMessage: Message = {
+      id: `msg-${Date.now()}`,
+      role: 'user',
+      content: inputText.trim(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputText('');
+    setTypingStatus('ИИ думает...');
+    setIsTyping(true);
+
+    try {
+      // Формируем историю для Gemini
+      const chatHistory = messages.map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.content }]
+      }));
+
+      const aiResponse = await chatWithAI(userMessage.content, chatHistory);
+      
+      const botMessage: Message = {
+        id: `msg-${Date.now()}`,
+        role: 'bot',
+        content: aiResponse,
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error: any) {
+      console.error('Chat error:', error);
+      const errorMessage: Message = {
+        id: `msg-${Date.now()}`,
+        role: 'bot',
+        content: error.message || 'Произошла ошибка при получении ответа. 😕',
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-screen bg-[#0B0B0F] text-white overflow-hidden">
+    <div className="flex flex-col h-full bg-[#0B0B0F] text-white overflow-hidden">
       {/* Floating Header */}
       <div className="absolute top-4 left-4 right-4 z-50 flex items-center justify-between pointer-events-none">
         <button 
@@ -190,17 +295,9 @@ export const AIChat = () => {
                         <FileText className="w-4 h-4" />
                         <span className="text-xs font-bold uppercase tracking-wider">Готовый конспект</span>
                       </div>
-                      <div className="prose prose-invert prose-sm max-w-none leading-relaxed">
-                        <ReactMarkdown>{message.content}</ReactMarkdown>
-                      </div>
-                      <div className="flex justify-between items-center pt-4 border-t border-white/5">
-                        <button 
-                          onClick={() => handleDownload(message.content)}
-                          className="flex items-center gap-2 text-xs font-medium text-purple-400 hover:text-purple-300 transition-colors bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1.5 rounded-lg"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          Скачать HTML
-                        </button>
+                      <MarkdownComponent content={message.content} />
+                      <div className="flex flex-wrap gap-2 pt-4 border-t border-white/5">
+                        <div className="flex-1" />
                         <div className="flex items-center gap-1 text-[10px] text-green-400 bg-green-400/10 px-2 py-1 rounded-full">
                           <CheckCircle2 className="w-3 h-3" />
                           Сгенерировано ИИ
@@ -208,7 +305,7 @@ export const AIChat = () => {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm leading-relaxed">{message.content}</p>
+                    <MarkdownComponent content={message.content} />
                   )}
                 </div>
               </div>
@@ -228,25 +325,29 @@ export const AIChat = () => {
               </div>
               <div className="bg-[#18181B] border border-white/5 p-4 rounded-2xl flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
-                <span className="text-xs text-gray-400">ИИ изучает видео...</span>
+                <span className="text-xs text-gray-400">{typingStatus}</span>
               </div>
             </div>
           </motion.div>
         )}
       </div>
 
-      {/* Input Area (Disabled during analysis) */}
+      {/* Input Area */}
       <div className="p-4 bg-[#0B0B0F] border-t border-white/5">
         <div className="relative">
           <input 
             type="text" 
-            placeholder="Задай вопрос по конспекту..."
+            placeholder="Задай вопрос ИИ..."
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
             disabled={isTyping}
             className="w-full bg-[#18181B] border border-white/10 rounded-xl py-4 px-4 pr-12 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 transition-all disabled:opacity-50"
           />
           <button 
-            disabled={isTyping}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-purple-600 rounded-lg text-white disabled:opacity-50 transition-all active:scale-95"
+            onClick={handleSendMessage}
+            disabled={isTyping || !inputText.trim()}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-purple-600 rounded-lg text-white disabled:opacity-50 transition-all active:scale-95 hover:bg-purple-500"
           >
             <Send className="w-4 h-4" />
           </button>

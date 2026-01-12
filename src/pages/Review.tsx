@@ -65,11 +65,20 @@ export const Review = () => {
             <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center shrink-0">
               <FileText className="w-6 h-6 text-purple-400" />
             </div>
-            <div className="space-y-2">
-              <h2 className="text-lg font-bold text-white">Конспект из видео</h2>
-              <p className="text-sm text-gray-400 leading-relaxed">
-                Загрузи видеоурок или вставь ссылку — ИИ создаст структурированный конспект
-              </p>
+            <div className="space-y-3 flex-1">
+              <div className="space-y-1">
+                <h2 className="text-lg font-bold text-white">Конспект из видео</h2>
+                <p className="text-sm text-gray-400 leading-relaxed">
+                  Загрузи видеоурок или вставь ссылку — ИИ создаст структурированный конспект
+                </p>
+              </div>
+              <button 
+                onClick={() => navigate('/ai-chat')}
+                className="flex items-center gap-2 text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors bg-purple-500/10 hover:bg-purple-500/20 px-4 py-2 rounded-xl border border-purple-500/20"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Перейти к ИИ-чату
+              </button>
             </div>
           </div>
         </div>

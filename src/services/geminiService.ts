@@ -38,3 +38,26 @@ export const analyzeVideo = async (videoSource: string | File, isUrl: boolean = 
     throw new Error(error.message || "Произошла ошибка при обработке видео на сервере.");
   }
 };
+
+export const chatWithAI = async (message: string, history: any[] = []) => {
+  try {
+    const response = await fetch('http://127.0.0.1:8002/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message, history }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Ошибка при общении с ИИ');
+    }
+
+    const data = await response.json();
+    return data.response;
+  } catch (error: any) {
+    console.error("Error in chatWithAI:", error);
+    throw new Error(error.message || "Не удалось получить ответ от ИИ.");
+  }
+};
