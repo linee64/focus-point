@@ -162,25 +162,30 @@ export const Review = () => {
               <span className="text-xs text-purple-400 font-medium">{notes.length}</span>
             </div>
             
-            <div className="grid gap-4">
+            <div className="grid gap-4 px-1">
               {notes.map((note) => (
                 <motion.div
                   key={note.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="bg-[#18181B]/60 backdrop-blur-sm p-4 rounded-2xl border border-white/5 flex items-center gap-4 group hover:bg-[#27272A]/80 transition-all"
+                  className="bg-[#18181B]/60 backdrop-blur-sm p-5 rounded-2xl border border-white/5 flex items-center gap-4 group hover:bg-[#27272A]/80 transition-all"
                 >
                   <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center shrink-0 text-purple-400">
                     <FileText className="w-6 h-6" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-white text-sm truncate">{note.title}</h4>
-                    <p className="text-[10px] text-gray-500 mt-0.5">
+                    <h4 className="font-bold text-white text-sm break-words leading-tight" title={note.title}>
+                      {note.title}
+                    </h4>
+                    <p className="text-[10px] text-gray-500 mt-1">
                       {new Date(note.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <button className="p-2 rounded-lg bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-purple-500/20 hover:text-purple-400">
+                    <button 
+                      onClick={() => navigate('/ai-chat', { state: { existingNote: note } })}
+                      className="p-2 rounded-lg bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-purple-500/20 hover:text-purple-400"
+                    >
                       <Send className="w-4 h-4 text-gray-400" />
                     </button>
                     <button 

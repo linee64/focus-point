@@ -5,10 +5,10 @@ class GeminiService:
     def __init__(self):
         self.api_key = GEMINI_API_KEY
         self.models_priority = [
-            'gemini-1.5-flash',
-            'gemini-3-pro-preview',
             'gemini-2.0-flash',
-            'gemini-2.5-flash-lite'
+            'gemini-2.5-flash',
+            'gemini-2.0-flash-lite',
+            'gemini-flash-latest'
         ]
         if self.api_key:
             genai.configure(api_key=self.api_key)
@@ -31,6 +31,10 @@ class GeminiService:
                 error_msg = str(e)
                 last_error = error_msg
                 print(f"Ошибка модели {model_name}: {error_msg}")
+                
+                if "leaked" in error_msg.lower():
+                    return "Ошибка: Ваш API-ключ был заблокирован Google (API key reported as leaked). Пожалуйста, создайте НОВЫЙ ключ в Google AI Studio и обновите файл .env."
+                
                 # Если ошибка 404 (модель не найдена) или 429 (квота), пробуем следующую
                 if "404" in error_msg or "429" in error_msg or "not found" in error_msg.lower():
                     continue

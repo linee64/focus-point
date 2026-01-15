@@ -2,11 +2,13 @@
  * Сервис для анализа видео через локальный бэкенд
  */
 
-export const analyzeVideo = async (videoSource: string | File, isUrl: boolean = true) => {
+export const analyzeVideo = async (videoSource: string | File, isUrl: boolean = true): Promise<{ summary: string; title: string }> => {
   if (!isUrl) {
     // Демо-режим для локальных файлов (загрузка через браузер)
     await new Promise(resolve => setTimeout(resolve, 2000));
-    return `# 📁 Конспект файла: ${(videoSource as File).name}\n\n## 🎯 Анализ загруженного видео завершен.\n\n*(В этой версии анализ локальных файлов работает в режиме демонстрации)*`;
+    const title = (videoSource as File).name;
+    const summary = `# 📁 Конспект файла: ${title}\n\n## 🎯 Анализ загруженного видео завершен.\n\n*(В этой версии анализ локальных файлов работает в режиме демонстрации)*`;
+    return { summary, title };
   }
 
   try {
@@ -26,8 +28,11 @@ export const analyzeVideo = async (videoSource: string | File, isUrl: boolean = 
 
     const data = await response.json();
     
-    // Возвращаем структурированный конспект
-    return data.summary;
+    // Возвращаем структурированный конспект и заголовок
+    return {
+      summary: data.summary,
+      title: data.title || "Конспект видео"
+    };
   } catch (error: any) {
     console.error("Error in analyzeVideo:", error);
     

@@ -237,3 +237,19 @@
 237- **Исправление прокрутки**:
 238- Отключена прокрутка в родительском `Layout` для страницы `AIChat`, чтобы избежать "черного экрана" при скролле.
 239- Внутренняя область чата теперь корректно занимает 100% высоты контейнера.
+240- **Безопасность**:
+241- Создан файл `.gitignore`.
+242- Добавлен `.env` в `.gitignore` для предотвращения утечки API-ключей.
+243- Добавлены стандартные исключения для Node.js (`node_modules`, `dist`) и Python (`__pycache__`, `venv`).
+244- **Интерфейс и навигация**:
+245- В [Review.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/Review.tsx) заголовок `h4` теперь отображает реальную тему видео (`note.title`).
+246- Кнопка "отправить" в списке заметок теперь переводит пользователя в [AIChat.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/AIChat.tsx) с загруженным конспектом.
+247- В [AIChat.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/AIChat.tsx) добавлена логика обработки `existingNote` из `location.state`.
+248- **Улучшение заголовков конспектов**:
+249- Бэкенд ([summarizer.py](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/backend/services/summarizer.py)) теперь возвращает словарь с `title` и `summary`. ИИ проинструктирован генерировать краткое название темы на первой строке.
+250- Эндпоинт `/summarize` в [main.py](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/backend/main.py) теперь возвращает поле `title`.
+251- Фронтенд сервис ([geminiService.ts](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/services/geminiService.ts)) и страница чата ([AIChat.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/AIChat.tsx)) обновлены для сохранения реального заголовка от ИИ вместо статичного "Конспект видео".
+252- **Исправления интерфейса**:
+253- Ширина карточек в списке заметок приведена к общему стандарту: добавлен `px-1` к контейнеру и увеличен внутренний отступ до `p-5` (как у остальных карточек).
+254- Исправлен рендеринг LaTeX формул в [AIChat.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/AIChat.tsx): улучшена функция `formatContent` для корректной обработки пробелов в инлайновых и блочных формулах.
+255- В [Review.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/Review.tsx) заголовки карточек конспектов теперь переносятся на новую строку (`break-words`) вместо обрезания (`truncate`), чтобы длинные названия не нарушали структуру карточки.

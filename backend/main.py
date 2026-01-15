@@ -67,12 +67,13 @@ async def summarize_video(request: TranscribeRequest):
 
         # 2. Затем суммаризируем
         print("Запуск ИИ-суммаризации через Gemini...")
-        summary = await summarizer.summarize_with_ai(text)
+        result = await summarizer.summarize_with_ai(text)
         
         return {
             "status": "ok",
             "transcription": text,
-            "summary": summary
+            "summary": result["summary"],
+            "title": result["title"]
         }
     except HTTPException:
         raise

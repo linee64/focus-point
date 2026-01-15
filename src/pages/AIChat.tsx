@@ -19,7 +19,7 @@ export const AIChat = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { addNote } = useStore();
-  const { videoUrl, videoFile } = location.state || {};
+  const { videoUrl, videoFile, existingNote } = location.state || {};
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -30,6 +30,26 @@ export const AIChat = () => {
   const hasStarted = useRef(false);
 
   useEffect(() => {
+    // Если есть существующая заметка, загружаем её
+    if (existingNote) {
+      if (messages.length === 0) {
+        setMessages([
+          {
+            id: `msg-${Date.now()}-1`,
+            role: 'bot',
+            content: `Загружен конспект: **${existingNote.title}**`
+          },
+          {
+            id: `msg-${Date.now()}-2`,
+            role: 'bot',
+            content: existingNote.content,
+            type: 'summary'
+          }
+        ]);
+      }
+      return;
+    }
+
     // Если видео нет, просто приветствуем пользователя
     if (!videoUrl && !videoFile) {
       if (messages.length === 0) {
@@ -58,7 +78,7 @@ export const AIChat = () => {
       setIsTyping(true);
 
       try {
-        const result = await analyzeVideo(videoUrl || videoFile, !!videoUrl);
+        const { summary, title } = await analyzeVideo(videoUrl || videoFile, !!videoUrl);
         
         setIsTyping(false);
 
@@ -68,16 +88,15 @@ export const AIChat = () => {
           {
             id: `msg-${Date.now()}-2`,
             role: 'bot',
-            content: result,
+            content: summary,
             type: 'summary'
           }
         ]);
 
         // Сохраняем конспект в хранилище
-        const title = videoFile ? (videoFile as File).name : "Конспект видео";
         addNote({
           title: title,
-          content: result,
+          content: summary,
           type: videoFile ? 'file' : 'video',
           sourceUrl: typeof videoUrl === 'string' ? videoUrl : undefined
         });
@@ -180,9 +199,17 @@ export const AIChat = () => {
   };
 
   const formatContent = (content: string) => {
-    // Добавляем пробелы вокруг одиночных $, если их нет, для корректного парсинга remark-math
-    // Но не трогаем $$, которые используются для блочных формул
-    return content.replace(/(?<!\$)\$([^\$\n]+)\$(?!\$)/g, ' $ $1 $ ');
+    // Улучшенная обработка LaTeX для корректного отображения в ReactMarkdown
+    // 1. Убеждаемся, что блочные формулы $$...$$ находятся на новых строках
+    let formatted = content.replace(/\$\$(.*?)\$\$/gs, '\n$$\n$1\n$$\n');
+    
+    // 2. Обрабатываем инлайновые формулы $...$, убирая лишние пробелы по краям
+    // Но добавляем пробелы СНАРУЖИ долларов, чтобы markdown не путал их с обычным текстом
+    formatted = formatted.replace(/(?<!\$)\$([^\$\n]+)\$(?!\$)/g, (match, formula) => {
+      return ` $${formula.trim()}$ `;
+    });
+    
+    return formatted;
   };
 
   const MarkdownComponent = ({ content }: { content: string }) => (
