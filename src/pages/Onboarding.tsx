@@ -4,6 +4,7 @@ import { ChevronRight, ArrowLeft, Check, Eye, EyeOff, Plus, Trash2, Clock, X, Up
 import { useStore } from '../store/useStore';
 import { clsx } from 'clsx';
 import Confetti from 'react-confetti';
+import { format } from 'date-fns';
 
 // Custom Time Picker Component
 const TimePicker = ({ 
@@ -179,6 +180,7 @@ export const Onboarding = () => {
   const [schoolShift, setSchoolShift] = useState<'1' | '2' | null>(null);
   const [schoolStartTime, setSchoolStartTime] = useState('08:00');
   const [schoolEndTime, setSchoolEndTime] = useState('14:00');
+  const [commuteTime, setCommuteTime] = useState<string>(''); // Время в пути в минутах
 
   // Activity input specific states
   const [activityName, setActivityName] = useState('');
@@ -286,10 +288,10 @@ export const Onboarding = () => {
   const handleNameSubmit = () => {
     if (firstName && lastName && schoolShift) {
       updateUser(firstName, lastName);
-      // We can also save school settings here if needed, or later
       updateSettings({
         schoolStart: schoolStartTime,
-        schoolEnd: schoolEndTime
+        schoolEnd: schoolEndTime,
+        commuteTime: parseInt(commuteTime) || 30
       });
       setView('activity-input');
     }
@@ -310,38 +312,36 @@ export const Onboarding = () => {
   };
 
   const handleCompleteOnboarding = () => {
-    // Add all collected activities to the store
+    // Сохраняем активности как шаблон (routineActivities)
+    updateSettings({
+      routineActivities: activities.map(a => ({
+        title: a.title,
+        startTime: a.startTime,
+        endTime: a.endTime,
+        type: 'activity'
+      }))
+    });
+
+    // Также добавляем их в расписание на ближайшие 7 дней (для обратной совместимости)
     activities.forEach(activity => {
-      // In a real app, we would handle recurrence. Here we just add one event or multiple?
-      // Let's add multiple events for the next week based on selected days.
-      // For simplicity in this demo, we might just store the pattern or add one example.
-      // Let's iterate next 7 days and add if day matches.
       const today = new Date();
       for(let i=0; i<7; i++) {
         const d = new Date(today);
         d.setDate(today.getDate() + i);
-        // getDay(): 0=Sun, 1=Mon...6=Sat.
-        // We will use Mon=0, Tue=1... Sun=6 for our UI indices to match common ru week.
-        // Actually standard getDay() is 0=Sun. Let's map our UI to it.
-        // UI: Mon(0), Tue(1), Wed(2), Thu(3), Fri(4), Sat(5), Sun(6)
-        // Date.getDay(): Sun(0), Mon(1)...Sat(6)
-        // Map UI index to Date.getDay(): 
-        // 0->1, 1->2, 2->3, 3->4, 4->5, 5->6, 6->0
         const jsDay = d.getDay();
         const uiDay = jsDay === 0 ? 6 : jsDay - 1;
         
         if (activity.days.includes(uiDay)) {
              addScheduleEvent({
                 title: activity.title,
+                date: format(d, 'yyyy-MM-dd'),
                 startTime: activity.startTime,
                 endTime: activity.endTime,
                 type: 'activity'
-                // We would ideally pass the date here too if the store supports it
             });
         }
       }
     });
-    // Go to step 3 instead of completing immediately
     setView('step-3');
   };
 
@@ -931,6 +931,17 @@ export const Onboarding = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <div className="space-y-2">
+              <label className="text-sm text-gray-400 ml-1">Время в пути до школы (мин)</label>
+              <input
+                type="number"
+                value={commuteTime}
+                onChange={(e) => setCommuteTime(e.target.value)}
+                placeholder="Например: 30"
+                className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
 
             <button
               onClick={handleNameSubmit}

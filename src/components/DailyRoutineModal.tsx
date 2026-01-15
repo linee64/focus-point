@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sun, Coffee, Utensils, Moon, Save, ChevronDown } from 'lucide-react';
+import { X, Sun, Coffee, Utensils, Moon, Save, ChevronDown, MapPin } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 interface DailyRoutineModalProps {
@@ -190,6 +190,21 @@ export const DailyRoutineModal: React.FC<DailyRoutineModalProps> = ({ isOpen, on
                   </div>
                 );
               })}
+
+              {/* Commute Time Field */}
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-2 ml-1">
+                  <MapPin className="w-4 h-4 text-emerald-400" />
+                  <label className="text-sm text-gray-400">Дорога до школы (мин)</label>
+                </div>
+                <input
+                  type="number"
+                  value={localSettings.commuteTime === 0 ? '' : localSettings.commuteTime}
+                  onChange={(e) => setLocalSettings({ ...localSettings, commuteTime: parseInt(e.target.value) || 0 })}
+                  placeholder="30"
+                  className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+                />
+              </div>
               
               <button
                 onClick={handleSave}

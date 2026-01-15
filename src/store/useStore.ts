@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Task, ScheduleEvent, UserSettings, Note } from '../types';
+import { Task, ScheduleEvent, UserSettings, Note, AIPlan, PlanItem } from '../types';
 import { addDays, format } from 'date-fns';
 
 interface StoreState {
@@ -10,6 +10,7 @@ interface StoreState {
   notes: Note[];
   settings: UserSettings;
   user?: { name: string; surname: string } | null;
+  aiPlans: Record<string, AIPlan>;
   
   // UI State
   isNotificationsOpen: boolean;
@@ -30,6 +31,10 @@ interface StoreState {
   addNote: (note: Omit<Note, 'id' | 'createdAt'>) => void;
   removeNote: (id: string) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
+  setAIPlan: (date: string, plan: AIPlan) => void;
+  updateAIPlanItem: (date: string, itemId: string, updates: Partial<PlanItem>) => void;
+  removeAIPlanItem: (date: string, itemId: string) => void;
+  toggleAIPlanItem: (date: string, itemId: string) => void;
   logout: () => void;
 }
 
@@ -82,8 +87,11 @@ export const useStore = create<StoreState>()(
         dinnerTime: '19:00',
         schoolStart: '08:00',
         schoolEnd: '14:00',
+        commuteTime: 30,
+        routineActivities: [],
       },
       user: null,
+      aiPlans: {},
 
       // UI State
       isNotificationsOpen: false,
@@ -132,6 +140,52 @@ export const useStore = create<StoreState>()(
       updateSettings: (newSettings) => set((state) => ({
         settings: { ...state.settings, ...newSettings }
       })),
+
+      setAIPlan: (date, plan) => set((state) => ({
+        aiPlans: { ...state.aiPlans, [date]: plan }
+      })),
+
+      updateAIPlanItem: (date, itemId, updates) => set((state) => {
+        const plan = state.aiPlans[date];
+        if (!plan) return state;
+        return {
+          aiPlans: {
+            ...state.aiPlans,
+            [date]: {
+              ...plan,
+              items: plan.items.map(item => item.id === itemId ? { ...item, ...updates } : item)
+            }
+          }
+        };
+      }),
+
+      removeAIPlanItem: (date, itemId) => set((state) => {
+        const plan = state.aiPlans[date];
+        if (!plan) return state;
+        return {
+          aiPlans: {
+            ...state.aiPlans,
+            [date]: {
+              ...plan,
+              items: plan.items.filter(item => item.id !== itemId)
+            }
+          }
+        };
+      }),
+
+      toggleAIPlanItem: (date, itemId) => set((state) => {
+        const plan = state.aiPlans[date];
+        if (!plan) return state;
+        return {
+          aiPlans: {
+            ...state.aiPlans,
+            [date]: {
+              ...plan,
+              items: plan.items.map(item => item.id === itemId ? { ...item, isCompleted: !item.isCompleted } : item)
+            }
+          }
+        };
+      }),
 
       logout: () => set({ hasOnboarded: false }),
     }),

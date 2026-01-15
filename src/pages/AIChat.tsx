@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ArrowLeft, Send, User, Bot, Loader2, FileText, CheckCircle2, Download } from 'lucide-react';
+import { Sparkles, ArrowLeft, Send, User, Bot, Loader2, FileText } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -138,66 +138,6 @@ export const AIChat = () => {
     }
   }, [messages]);
 
-  const handleDownload = async (content: string) => {
-    try {
-      const response = await fetch('http://localhost:8002/generate-html', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          markdown_text: content,
-          title: videoFile ? (videoFile as File).name : "Конспект видео"
-        }),
-      });
-
-      if (!response.ok) throw new Error('Ошибка при генерации файла');
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `summary-${Date.now()}.html`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error('Download error:', error);
-      alert('Не удалось скачать файл');
-    }
-  };
-
-  const handleDownloadDocx = async (content: string) => {
-    try {
-      const response = await fetch('http://localhost:8002/generate-docx', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          markdown_text: content,
-          title: videoFile ? (videoFile as File).name : "Конспект видео"
-        }),
-      });
-
-      if (!response.ok) throw new Error('Ошибка при генерации файла');
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `summary-${Date.now()}.docx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error('Download error:', error);
-      alert('Не удалось скачать файл');
-    }
-  };
-
   const formatContent = (content: string) => {
     // Улучшенная обработка LaTeX для корректного отображения в ReactMarkdown
     // 1. Убеждаемся, что блочные формулы $$...$$ находятся на новых строках
@@ -205,7 +145,7 @@ export const AIChat = () => {
     
     // 2. Обрабатываем инлайновые формулы $...$, убирая лишние пробелы по краям
     // Но добавляем пробелы СНАРУЖИ долларов, чтобы markdown не путал их с обычным текстом
-    formatted = formatted.replace(/(?<!\$)\$([^\$\n]+)\$(?!\$)/g, (match, formula) => {
+    formatted = formatted.replace(/(?<!\$)\$([^\$\n]+)\$(?!\$)/g, (_, formula) => {
       return ` $${formula.trim()}$ `;
     });
     
@@ -326,7 +266,7 @@ export const AIChat = () => {
                       <div className="flex flex-wrap gap-2 pt-4 border-t border-white/5">
                         <div className="flex-1" />
                         <div className="flex items-center gap-1 text-[10px] text-green-400 bg-green-400/10 px-2 py-1 rounded-full">
-                          <CheckCircle2 className="w-3 h-3" />
+                          <Sparkles className="w-3 h-3" />
                           Сгенерировано ИИ
                         </div>
                       </div>

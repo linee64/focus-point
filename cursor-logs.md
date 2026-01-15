@@ -77,27 +77,30 @@
         - Fields: Subject, Title, Date, Type (Homework, Project, Exam).
         - Integrated into the "Add" button in `Dashboard.tsx`.
 
-## 2026-01-08
+## 2026-01-15
+- **AI Schedule Analysis Overhaul**:
+    - Integrated Gemini 2.5 Flash Lite as the primary model for schedule analysis.
+    - Converted the static free slot chart into an interactive AI-generated To-Do List.
+    - Implemented a caching system for AI plans in the Zustand store (`aiPlans`) to prevent unnecessary regeneration.
+    - Added "Fingerprinting" logic: the AI plan only regenerates if the user's schedule or settings (wake-up time, commute, etc.) change.
+    - Added a manual "Refresh" button to the AI plan header.
+    - UI Enhancements:
+        - Increased the size of the time span elements (`text-sm` with extra padding).
+        - Removed the purple gradient from the AI analysis card for a cleaner look.
+        - Standardized AI-generated cards to match user activity styling.
+- **Commute Time Integration**:
+    - Added `commuteTime` field to `UserSettings` and Onboarding.
+    - Modified the Gemini prompt to automatically include commute time (e.g., "Дорога в школу") before and after school sessions.
+- **Recurring Routine Templates**:
+    - Added `routineActivities` to `UserSettings` to store permanent activities (Sleep, Breakfast, etc.).
+    - Updated Onboarding to save initial activities as routine templates.
+    - AI now prioritizes these templates when generating daily plans.
 - **Bug Fixes**:
-    - Fixed `ReferenceError: Notifications is not defined` in `Dashboard.tsx`.
-    - Added missing imports for `Notifications` and `AddTaskModal` in `Dashboard.tsx`.
-    - Fixed UI state handling for notifications and task modal in `Dashboard.tsx` using `useStore`.
-- **UI & Functionality Enhancements**:
-    - **Modals**:
-        - Centered all modals (`AddTaskModal`, `AddScheduleModal`) and added `max-h-[80vh]` with scrolling to ensure the "Ready" buttons are always visible.
-        - Unified calendar positioning with `mb-6` offset.
-    - **AddScheduleModal**:
-        - Created `AddScheduleModal.tsx` for adding schedule events with subtasks, time range, and repetition.
-        - Integrated `AddScheduleModal` into `Schedule.tsx`.
-    - **TimePicker**:
-        - Created a custom `TimePicker.tsx` component with a scrollable interface in the app's dark/purple style.
-        - Replaced standard `input type="time"` with the new `TimePicker` in `AddScheduleModal`.
-    - **Schedule.tsx**:
-        - Updated to 7-day display (including weekends).
-        - Added week navigation (Previous/Next week).
-        - Connected the "Add" button to open `AddScheduleModal`.
-- **Schedule & Data Management Overhaul**:
-        - **Date Persistence**: Added `date` field to `ScheduleEvent` type and store.
+    - Resolved JSON parsing errors from Gemini by adding response cleaning and trailing comma removal.
+    - Unified backend communication to port 8001.
+    - Fixed Gemini quota (429) issues by adding fallback model logic and user-friendly error messages.
+    - Removed initial "0" from numeric input fields in Onboarding and DailyRoutineModal for better UX.
+    - Removed duplicate activity lists from the Schedule page; now everything is unified in the AI plan.
 
 ## 2026-01-09
 - **UI Adjustments**:
@@ -253,3 +256,13 @@
 253- Ширина карточек в списке заметок приведена к общему стандарту: добавлен `px-1` к контейнеру и увеличен внутренний отступ до `p-5` (как у остальных карточек).
 254- Исправлен рендеринг LaTeX формул в [AIChat.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/AIChat.tsx): улучшена функция `formatContent` для корректной обработки пробелов в инлайновых и блочных формулах.
 255- В [Review.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/Review.tsx) заголовки карточек конспектов теперь переносятся на новую строку (`break-words`) вместо обрезания (`truncate`), чтобы длинные названия не нарушали структуру карточки.
+
+## 2026-01-15
+- **AI Schedule Analysis & Visualizer**:
+    - Developed `AIScheduleAnalysis` component to provide intelligent insights into the user's daily schedule.
+    - Integrated Gemini AI to identify free time slots ("gaps") and recommend personalized activities (rest, productivity, or activity).
+    - Added a visual vertical timeline for free slots with icons and color-coded categories.
+    - Implemented automatic analysis on date change (for today and future dates).
+    - Updated `geminiService.ts` with `analyzeSchedule` method and unified backend port to `8001`.
+    - Integrated the analysis component into the `Schedule.tsx` page, positioned below the events summary.
+    - Added loading states and error handling for the AI analysis process.

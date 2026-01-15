@@ -30,6 +30,13 @@ export interface UserSettings {
   dinnerTime: string;
   schoolStart: string;
   schoolEnd: string;
+  commuteTime: number; // Время в пути в минутах
+  routineActivities: {
+    title: string;
+    startTime: string;
+    endTime: string;
+    type: string;
+  }[];
 }
 
 export interface Note {
@@ -39,4 +46,21 @@ export interface Note {
   createdAt: string; // ISO string
   sourceUrl?: string;
   type: 'video' | 'text' | 'file';
+}
+
+export interface PlanItem {
+  start: string;
+  end: string;
+  title: string;
+  type: 'rest' | 'productivity' | 'activity' | 'routine' | 'school' | 'sleep' | 'meal';
+  isRecommendation: boolean;
+  id: string;
+  isCompleted: boolean;
+}
+
+export interface AIPlan {
+  items: PlanItem[];
+  analysis: string;
+  lastGenerated: string;
+  fingerprint: string;
 }

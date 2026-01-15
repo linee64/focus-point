@@ -5,10 +5,10 @@ class GeminiService:
     def __init__(self):
         self.api_key = GEMINI_API_KEY
         self.models_priority = [
-            'gemini-2.0-flash',
+            'gemini-2.5-flash-lite',
             'gemini-2.5-flash',
-            'gemini-2.0-flash-lite',
-            'gemini-flash-latest'
+            'gemini-2.0-flash-lite-preview-02-05',
+            'gemini-2.0-flash'
         ]
         if self.api_key:
             genai.configure(api_key=self.api_key)

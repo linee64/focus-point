@@ -15,13 +15,12 @@ import {
   School
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useState } from 'react';
 import { DailyRoutineModal } from '../components/DailyRoutineModal';
 
 export const Profile = () => {
-  const { logout, setNotificationsOpen, tasks, notes } = useStore();
+  const { logout, setNotificationsOpen, tasks, notes, settings } = useStore();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [school, setSchool] = useState('');
   const [grade, setGrade] = useState('');
@@ -203,7 +202,9 @@ export const Profile = () => {
                 <Clock className="w-5 h-5 text-gray-400" />
                 <div>
                     <div className="font-medium">Режим дня</div>
-                    <div className="text-[10px] text-gray-500">Настроить время подъема, еды и сна</div>
+                    <div className="text-[10px] text-gray-500">
+                        {settings.wakeUpTime} - {settings.bedTime} • Дорога: {settings.commuteTime} мин
+                    </div>
                 </div>
             </div>
             <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />

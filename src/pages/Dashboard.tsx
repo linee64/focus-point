@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Bell, BookOpen, Clock, CheckCircle2, MapPin, Smile, Meh, Frown, Sparkles, Target, Plus, Check, Trash2 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { Notifications } from '../components/Notifications';
 import { AddTaskModal } from '../components/AddTaskModal';
-import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
 import { format, parseISO, differenceInDays, startOfDay } from 'date-fns';
 import { ru } from 'date-fns/locale';

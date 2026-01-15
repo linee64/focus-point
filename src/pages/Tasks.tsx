@@ -60,15 +60,6 @@ export const Tasks = () => {
     };
   };
 
-  const getDeadlineText = (deadline?: string) => {
-    if (!deadline) return '';
-    try {
-      return format(parseISO(deadline), 'd MMM', { locale: ru });
-    } catch (e) {
-      return deadline;
-    }
-  };
-
   return (
     <motion.div 
       initial={{ opacity: 0 }}

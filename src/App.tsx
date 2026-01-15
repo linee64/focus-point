@@ -11,8 +11,6 @@ import { Profile } from './pages/Profile';
 import { AIChat } from './pages/AIChat';
 import { Notifications } from './components/Notifications';
 import { AddTaskModal } from './components/AddTaskModal';
-import { useEffect } from 'react';
-
 
 function App() {
   const { hasOnboarded, isNotificationsOpen, setNotificationsOpen, isAddTaskOpen, setAddTaskOpen } = useStore();

@@ -1,22 +1,18 @@
 import { motion } from 'framer-motion';
-import { Calendar as CalendarIcon, Plus, Bell, Sparkles, MapPin, ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, Bell, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format, addDays, startOfWeek, isSameDay, addWeeks, subWeeks } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { AddScheduleModal } from '../components/AddScheduleModal';
+import { AIScheduleAnalysis } from '../components/AIScheduleAnalysis';
 
 export const Schedule = () => {
-  const { setNotificationsOpen, isAddScheduleOpen, setAddScheduleOpen, schedule, removeScheduleEvent } = useStore();
+  const { setNotificationsOpen, isAddScheduleOpen, setAddScheduleOpen, schedule } = useStore();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [baseDate, setBaseDate] = useState(new Date());
   const [editingEvent, setEditingEvent] = useState<any>(null);
-
-  const handleEdit = (event: any) => {
-    setEditingEvent(event);
-    setAddScheduleOpen(true);
-  };
 
   const handleCloseModal = () => {
     setAddScheduleOpen(false);
@@ -132,57 +128,8 @@ export const Schedule = () => {
       <div className="space-y-4">
         <p className="text-gray-500 text-sm">{format(selectedDate, 'EEEE', { locale: ru })} • {filteredSchedule.length} событий</p>
         
-        <div className="space-y-3">
-          {filteredSchedule.map((event) => (
-            <div 
-              key={event.id}
-              className="bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center gap-4 hover:border-white/10 transition-colors group relative"
-            >
-              <div className="w-12 font-bold text-gray-300 text-lg font-mono">
-                {event.startTime}
-              </div>
-              <div className={clsx(
-                "w-1 h-10 rounded-full bg-gradient-to-b",
-                event.type === 'school' ? "from-purple-500 to-blue-500" :
-                event.type === 'sleep' ? "from-indigo-500 to-slate-500" :
-                "from-amber-500 to-orange-500"
-              )}></div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-gray-300 text-lg truncate">{event.title}</h3>
-                </div>
-                {event.subtasks && event.subtasks.length > 0 ? (
-                  <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
-                    {event.subtasks.map((sub, idx) => (
-                      <span key={idx} className="text-xs text-gray-500 flex items-center gap-1">
-                        <div className="w-1 h-1 rounded-full bg-gray-600" />
-                        {sub}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-xs text-gray-600 mt-1 italic">Нет подзадач</div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button 
-                  className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
-                  onClick={() => handleEdit(event)}
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button 
-                  className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all"
-                  onClick={() => removeScheduleEvent(event.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* AI Analysis Component */}
+        <AIScheduleAnalysis selectedDate={selectedDate} />
       </div>
       <AddScheduleModal 
         isOpen={isAddScheduleOpen} 

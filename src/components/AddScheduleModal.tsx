@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Clock, BookOpen, Repeat, Plus, Trash2 } from 'lucide-react';
+import { X, Calendar, BookOpen, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { format, parseISO } from 'date-fns';
