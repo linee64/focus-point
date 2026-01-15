@@ -383,8 +383,8 @@ export const Onboarding = () => {
   };
 
   const renderCarousel = () => (
-    <div className="flex-1 relative overflow-hidden flex flex-col h-full">
-      <div className="flex-1 relative">
+    <div className="flex-1 relative overflow-y-auto custom-scrollbar flex flex-col h-full">
+      <div className="flex-1 relative min-h-[600px]">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
@@ -476,7 +476,7 @@ export const Onboarding = () => {
   );
 
   const renderRegister = () => (
-    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden">
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-y-auto custom-scrollbar">
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/80 z-10" />
@@ -628,7 +628,7 @@ export const Onboarding = () => {
   );
 
   const renderLogin = () => (
-    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden">
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-y-auto custom-scrollbar">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/80 z-10" />
@@ -805,7 +805,7 @@ export const Onboarding = () => {
   };
 
   const renderNameInput = () => (
-    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden">
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-y-auto custom-scrollbar">
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/40 z-30" />
@@ -830,7 +830,7 @@ export const Onboarding = () => {
         <ArrowLeft size={24} className="text-white" />
       </button>
 
-      <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full z-20 relative pb-20">
+      <div className="relative z-20 w-full max-w-md mx-auto flex flex-col pb-20 pt-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -958,7 +958,7 @@ export const Onboarding = () => {
   );
 
   const renderActivityInput = () => (
-    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden">
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-y-auto custom-scrollbar">
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/40 z-30" />
@@ -983,7 +983,7 @@ export const Onboarding = () => {
         <ArrowLeft size={24} className="text-white" />
       </button>
 
-      <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full z-20 relative pb-20">
+      <div className="relative z-20 w-full max-w-md mx-auto flex flex-col pb-20 pt-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1101,7 +1101,7 @@ export const Onboarding = () => {
   );
 
   const renderStep3 = () => (
-    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden items-center justify-center">
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-y-auto custom-scrollbar">
         {/* Background Video */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/40 z-30" />
@@ -1126,8 +1126,8 @@ export const Onboarding = () => {
         <ArrowLeft size={24} className="text-white" />
       </button>
       
-      <div className="relative z-20 w-full max-w-md flex flex-col h-full pb-20">
-          <div className="text-center mb-8 mt-auto">
+      <div className="relative z-20 w-full max-w-md mx-auto flex flex-col pb-20 pt-8">
+          <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-3 text-primary">
                 Загрузите расписание уроков
             </h2>
@@ -1199,7 +1199,7 @@ export const Onboarding = () => {
   );
 
   const renderDailyRoutine = () => (
-    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden items-center justify-center">
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-y-auto custom-scrollbar">
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-purple-900/80 mix-blend-multiply z-20" />
@@ -1223,8 +1223,8 @@ export const Onboarding = () => {
         <ArrowLeft size={24} className="text-white" />
       </button>
 
-      <div className="relative z-20 w-full max-w-md flex flex-col h-full pb-20">
-        <div className="text-center mb-6 mt-auto">
+      <div className="relative z-20 w-full max-w-md mx-auto flex flex-col pb-20 pt-8">
+        <div className="text-center mb-6">
           <h2 className="text-3xl font-bold mb-3 text-primary">
               Ваш режим дня
           </h2>
@@ -1233,7 +1233,7 @@ export const Onboarding = () => {
           </p>
         </div>
 
-        <div className="flex-1 flex flex-col justify-center space-y-4 mb-8 overflow-y-auto scrollbar-hide">
+        <div className="flex-1 flex flex-col space-y-4 mb-8">
             <TimePicker label="Подъем" value={wakeUpTime} onChange={setWakeUpTime} />
             <TimePicker label="Завтрак" value={breakfastTime} onChange={setBreakfastTime} />
             <TimePicker label="Обед" value={lunchTime} onChange={setLunchTime} />
@@ -1253,7 +1253,7 @@ export const Onboarding = () => {
   );
 
   const renderCompletion = () => (
-    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-hidden items-center justify-center text-center">
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-y-auto custom-scrollbar text-center">
       {/* Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <div className="absolute top-[-20%] right-[-20%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[100px]" />
@@ -1272,7 +1272,7 @@ export const Onboarding = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="z-10 w-full max-w-sm space-y-8 flex flex-col items-center"
+        className="z-10 w-full max-w-sm mx-auto space-y-8 flex flex-col items-center pt-12 pb-20"
       >
         <motion.div 
              initial={{ scale: 0, opacity: 0, y: -50 }}
