@@ -10,8 +10,8 @@ import { AIScheduleAnalysis } from '../components/AIScheduleAnalysis';
 
 export const Schedule = () => {
   const { setNotificationsOpen, isAddScheduleOpen, setAddScheduleOpen, schedule } = useStore();
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [baseDate, setBaseDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date('2026-01-16'));
+  const [baseDate, setBaseDate] = useState(new Date('2026-01-16'));
   const [editingEvent, setEditingEvent] = useState<any>(null);
 
   const handleCloseModal = () => {
@@ -44,7 +44,7 @@ export const Schedule = () => {
           <div>
             <h1 className="text-xl font-bold text-[#8B5CF6]">SleamAI</h1>
             <p className="text-xs text-gray-400 capitalize">
-              {format(new Date(), 'EEEE, d MMMM', { locale: ru })}
+              {format(selectedDate, 'EEEE, d MMMM', { locale: ru })}
             </p>
           </div>
         </div>
@@ -97,7 +97,7 @@ export const Schedule = () => {
       <div className="flex justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide px-1">
         {weekDays.map((date, i) => {
           const isSelected = isSameDay(date, selectedDate);
-          const isToday = isSameDay(date, new Date());
+          const isToday = isSameDay(date, new Date('2026-01-16'));
           return (
             <div
               key={i}

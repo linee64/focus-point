@@ -15,33 +15,75 @@ class GeminiService:
         else:
             print("ВНИМАНИЕ: GEMINI_API_KEY не установлен в .env")
 
-    async def get_response(self, message: str, history=None):
+    async def recognize_schedule_from_image(self, image_data: bytes, mime_type: str, group: str = ""):
         if not self.api_key:
-            return "Ошибка: API-ключ Gemini не настроен. Пожалуйста, добавьте GEMINI_API_KEY в файл .env"
+            return None
         
-        last_error = ""
+        prompt = f"""
+        Проанализируй это изображение расписания занятий. 
+        Группа пользователя: {group if group else "не указана"}.
+        Извлеки список предметов для этой группы на всю неделю (пн-пт).
+        
+        СТРУКТУРА РАСПИСАНИЯ:
+        1. Дни недели расположены в виде пяти горизонтальных блоков сверху вниз:
+           - 1-й блок (самый верхний) — Понедельник
+           - 2-й блок — Вторник
+           - 3-й блок — Среда
+           - 4-й блок — Четверг
+           - 5-й блок — Пятница
+        
+        2. Колонки групп (КРИТИЧЕСКИ ВАЖНО):
+           - Каждая строка с предметами разделена на две основные колонки.
+           - ЛЕВАЯ КОЛОНКА всегда соответствует "1 Группе" (например, 10S-1, 9O-1, 11A-1).
+           - ПРАВАЯ КОЛОНКА всегда соответствует "2 Группе" (например, 10S-2, 9O-2, 11A-2).
+           - Если пользователь выбрал "1 группа", бери данные ТОЛЬКО из ЛЕВОЙ колонки.
+           - Если пользователь выбрал "2 группа", бери данные ТОЛЬКО из ПРАВОЙ колонки.
+           - Если ячейка предмета одна на всю ширину (общая для обеих групп), бери её в любом случае.
+           - НИКОГДА не бери предмет из правой колонки, если нужна 1 группа, и наоборот.
+        
+        3. Формат ячеек внутри колонки:
+           - Широкая ячейка содержит название предмета и инициалы учителя.
+           - Узкая ячейка справа от названия содержит номер кабинета.
+        
+        ЗАДАЧА:
+        1. Определи день недели по горизонтальному блоку.
+        2. Выбери нужную колонку в зависимости от группы пользователя ({group}).
+        3. Извлеки название предмета (title), время (если указано в начале строки или блока, иначе используй стандартное школьное время) и номер кабинета (room).
+        4. Если предмет общий (занимает обе колонки), включи его.
+        
+        Верни список предметов в формате JSON.
+        Для каждого предмета укажи:
+        - title: название предмета (без инициалов учителя)
+        - start: время начала (формат HH:mm)
+        - end: время окончания (формат HH:mm)
+        - room: номер кабинета (из узкой ячейки справа)
+        - day: день недели (одно из: "понедельник", "вторник", "среда", "четверг", "пятница")
+        - type: всегда "school"
+        
+        Верни ТОЛЬКО массив JSON объектов.
+        """
+        
         for model_name in self.models_priority:
             try:
-                print(f"Попытка запроса через модель: {model_name}...")
                 model = genai.GenerativeModel(model_name)
-                chat = model.start_chat(history=history or [])
-                response = await chat.send_message_async(message)
-                return response.text
+                response = await model.generate_content_async([
+                    prompt,
+                    {'mime_type': mime_type, 'data': image_data}
+                ])
+                
+                # Очистка от markdown блоков если есть
+                text = response.text.strip()
+                if text.startswith("```json"):
+                    text = text[7:-3].strip()
+                elif text.startswith("```"):
+                    text = text[3:-3].strip()
+                
+                import json
+                return json.loads(text)
             except Exception as e:
-                error_msg = str(e)
-                last_error = error_msg
-                print(f"Ошибка модели {model_name}: {error_msg}")
-                
-                if "leaked" in error_msg.lower():
-                    return "Ошибка: Ваш API-ключ был заблокирован Google (API key reported as leaked). Пожалуйста, создайте НОВЫЙ ключ в Google AI Studio и обновите файл .env."
-                
-                # Если ошибка 404 (модель не найдена) или 429 (квота), пробуем следующую
-                if "404" in error_msg or "429" in error_msg or "not found" in error_msg.lower():
-                    continue
-                else:
-                    # Если ошибка критическая (например, неверный ключ), прекращаем
-                    break
+                print(f"Ошибка Vision в модели {model_name}: {e}")
+                continue
         
-        return f"К сожалению, все модели перегружены или недоступны. Последняя ошибка: {last_error}"
+        return None
 
 gemini_service = GeminiService()

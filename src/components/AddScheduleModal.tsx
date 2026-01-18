@@ -26,6 +26,7 @@ export const AddScheduleModal = ({ isOpen, onClose, eventToEdit, initialDate }: 
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('10:00');
   const [repeat, setRepeat] = useState<'none' | 'daily' | 'weekly'>('none');
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const subjectsMap: Record<string, string[]> = {
     'Математика': ['ДЗ в учебнике', 'Повторить формулы', 'Подготовиться к контрольной'],
@@ -104,9 +105,35 @@ export const AddScheduleModal = ({ isOpen, onClose, eventToEdit, initialDate }: 
       updateScheduleEvent(eventToEdit.id, eventData);
     } else {
       addScheduleEvent(eventData);
+      
+      // Если выбрано повторение, сохраняем в routineActivities
+      if (repeat !== 'none') {
+        const { settings, updateSettings } = useStore.getState();
+        const newRoutine = {
+          title,
+          startTime,
+          endTime,
+          type: 'activity' as const
+        };
+        
+        // Проверяем, нет ли уже такой рутины
+        const exists = settings.routineActivities.some(a => 
+          a.title === title && a.startTime === startTime && a.endTime === endTime
+        );
+        
+        if (!exists) {
+          updateSettings({
+            routineActivities: [...settings.routineActivities, newRoutine]
+          });
+        }
+      }
     }
 
-    onClose();
+    setIsSuccess(true);
+    setTimeout(() => {
+      setIsSuccess(false);
+      onClose();
+    }, 1000);
   };
 
   return (
@@ -260,9 +287,14 @@ export const AddScheduleModal = ({ isOpen, onClose, eventToEdit, initialDate }: 
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] text-white font-bold py-4 rounded-2xl shadow-lg shadow-purple-500/20 active:scale-[0.98] transition-all mt-2"
+                disabled={isSuccess}
+                className={`w-full font-bold py-4 rounded-2xl shadow-lg transition-all mt-2 active:scale-[0.98] ${
+                  isSuccess 
+                    ? 'bg-green-500 text-white shadow-green-500/20' 
+                    : 'bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] text-white shadow-purple-500/20'
+                }`}
               >
-                Готово
+                {isSuccess ? 'Сохранено!' : 'Готово'}
               </button>
             </form>
           </motion.div>

@@ -14,15 +14,22 @@ export const Dashboard = () => {
     isNotificationsOpen, 
     setNotificationsOpen, 
     isAddTaskOpen, 
-    setAddTaskOpen 
+    setAddTaskOpen,
+    schedule 
   } = useStore();
+
+  const todayStr = '2026-01-16'; // Временно фиксированная дата для проверки
+  const todayDate = new Date('2026-01-16');
+  const todaySchedule = schedule
+    .filter(e => e.date === todayStr)
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
   const activeTasks = tasks.filter(t => !t.isCompleted).slice(0, 3);
 
   const getDeadlineInfo = (deadline?: string) => {
     if (!deadline) return null;
     const date = parseISO(deadline);
-    const daysLeft = differenceInDays(date, startOfDay(new Date()));
+    const daysLeft = differenceInDays(date, startOfDay(todayDate));
     
     let label = `${daysLeft} дней`;
     if (daysLeft === 0) label = 'Сегодня';
@@ -75,6 +82,8 @@ export const Dashboard = () => {
     }, 1500);
   };
 
+  const isWeekend = [0, 6].includes(todayDate.getDay());
+
   return (
     <div className="space-y-6 pb-4">
       {/* Header */}
@@ -85,7 +94,9 @@ export const Dashboard = () => {
           </div>
           <div>
             <h1 className="text-xl font-bold text-[#8B5CF6]">SleamAI</h1>
-            <p className="text-xs text-gray-400">Суббота, 3 Января</p>
+            <p className="text-xs text-gray-400 capitalize">
+              {format(todayDate, 'EEEE, d MMMM', { locale: ru })}
+            </p>
           </div>
         </div>
         <button 
@@ -110,23 +121,25 @@ export const Dashboard = () => {
               <BookOpen className="w-4 h-4 text-purple-400" />
             </div>
             <span className="text-[10px] text-gray-500 font-medium">Уроков</span>
-            <span className="text-xl font-bold text-white">6</span>
+            <span className="text-xl font-bold text-white">{todaySchedule.filter(e => e.type === 'school').length}</span>
           </div>
           
           <div className="bg-white/5 p-3 rounded-2xl border border-white/5 flex flex-col items-center justify-center gap-1">
             <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center mb-1">
               <Clock className="w-4 h-4 text-blue-400" />
             </div>
-            <span className="text-[10px] text-gray-500 font-medium">Часов</span>
-            <span className="text-xl font-bold text-white">4.5</span>
+            <span className="text-[10px] text-gray-500 font-medium">Событий</span>
+            <span className="text-xl font-bold text-white">{todaySchedule.length}</span>
           </div>
 
           <div className="bg-white/5 p-3 rounded-2xl border border-white/5 flex flex-col items-center justify-center gap-1">
             <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center mb-1">
               <CheckCircle2 className="w-4 h-4 text-green-400" />
             </div>
-            <span className="text-[10px] text-gray-500 font-medium">Готово</span>
-            <span className="text-xl font-bold text-white">2/5</span>
+            <span className="text-[10px] text-gray-500 font-medium">Задач</span>
+            <span className="text-xl font-bold text-white">
+              {tasks.filter(t => t.isCompleted).length}/{tasks.length}
+            </span>
           </div>
         </div>
       </section>
@@ -138,120 +151,71 @@ export const Dashboard = () => {
             <Clock className="w-5 h-5 text-purple-400" />
             <h2 className="font-bold">Расписание</h2>
           </div>
-          <span className="text-xs text-gray-500">6 уроков</span>
+          <span className="text-xs text-gray-500">{todaySchedule.length} событий</span>
         </div>
 
         <div className="space-y-2">
-          {/* Completed Lesson 1 */}
-          <div className="bg-white/5 p-4 rounded-2xl border border-white/5 relative overflow-hidden group">
-            <div className="absolute left-0 top-3 bottom-3 w-1 bg-green-500 rounded-r-full"></div>
-            <div className="flex justify-between items-center pl-3">
-              <div>
-                <h3 className="font-bold text-gray-500 line-through decoration-gray-600">Математика</h3>
-                <div className="flex items-center gap-3 text-xs text-gray-600 mt-1">
-                  <span>08:30 - 09:15</span>
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>204</span>
-                  </div>
-                </div>
-              </div>
-              <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center">
-                <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-              </div>
-            </div>
-          </div>
+          {todaySchedule.length > 0 ? (
+            todaySchedule.map((event) => {
+              const now = format(new Date(), 'HH:mm');
+              const isCurrent = now >= event.startTime && now <= event.endTime;
+              const isPast = now > event.endTime;
 
-          {/* Completed Lesson 2 */}
-          <div className="bg-white/5 p-4 rounded-2xl border border-white/5 relative overflow-hidden">
-            <div className="absolute left-0 top-3 bottom-3 w-1 bg-green-500 rounded-r-full"></div>
-            <div className="flex justify-between items-center pl-3">
-              <div>
-                <h3 className="font-bold text-gray-500 line-through decoration-gray-600">Русский язык</h3>
-                <div className="flex items-center gap-3 text-xs text-gray-600 mt-1">
-                  <span>09:20 - 10:05</span>
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>301</span>
+              return (
+                <div 
+                  key={event.id}
+                  className={clsx(
+                    "p-4 rounded-2xl border transition-all relative overflow-hidden",
+                    isCurrent 
+                      ? "bg-[#212129] border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.3)]" 
+                      : "bg-white/5 border-white/5"
+                  )}
+                >
+                  <div className={clsx(
+                    "absolute left-0 top-3 bottom-3 w-1 rounded-r-full",
+                    isCurrent ? "bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]" : 
+                    isPast ? "bg-green-500" : "bg-white/20"
+                  )}></div>
+                  
+                  <div className="flex justify-between items-center pl-3">
+                    <div>
+                      <h3 className={clsx(
+                        "font-bold",
+                        isCurrent ? "text-white text-lg" : 
+                        isPast ? "text-gray-500 line-through decoration-gray-600" : "text-white"
+                      )}>
+                        {event.title}
+                      </h3>
+                      <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                        <span>{event.startTime} - {event.endTime}</span>
+                        {event.type === 'school' && (
+                            <div className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              <span>Каб. {event.room || '—'}</span>
+                            </div>
+                          )}
+                      </div>
+                    </div>
+                    
+                    {isCurrent ? (
+                      <span className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 text-[10px] font-bold uppercase tracking-wider border border-purple-500/20">
+                        Сейчас
+                      </span>
+                    ) : isPast ? (
+                      <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                      </div>
+                    ) : null}
                   </div>
                 </div>
-              </div>
-              <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center">
-                <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-              </div>
+              );
+            })
+          ) : (
+            <div className="py-8 text-center bg-white/5 rounded-3xl border border-dashed border-white/10">
+              <p className="text-sm text-gray-500 italic">На сегодня расписание пусто</p>
+              <p className="text-[10px] text-gray-600 mt-1">Добавьте уроки в разделе «Расписание» или загрузите фото в профиле</p>
             </div>
-          </div>
-
-          {/* Current Lesson */}
-          <div className="bg-[#212129] p-4 rounded-2xl border border-purple-500 relative overflow-hidden shadow-[0_0_20px_rgba(168,85,247,0.3)]">
-            <div className="absolute left-0 top-3 bottom-3 w-1 bg-purple-500 rounded-r-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
-            <div className="flex justify-between items-center pl-3">
-              <div>
-                <h3 className="font-bold text-white text-lg">Физика</h3>
-                <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
-                  <span>10:20 - 11:05</span>
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>105</span>
-                  </div>
-                </div>
-              </div>
-              <span className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 text-[10px] font-bold uppercase tracking-wider border border-purple-500/20">
-                Сейчас
-              </span>
-            </div>
-          </div>
-
-          {/* Upcoming Lesson 1 */}
-          <div className="bg-white/5 p-4 rounded-2xl border border-white/5 relative overflow-hidden">
-            <div className="absolute left-0 top-3 bottom-3 w-1 bg-white/20 rounded-r-full"></div>
-            <div className="flex justify-between items-center pl-3">
-              <div>
-                <h3 className="font-bold text-white">История</h3>
-                <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
-                  <span>11:15 - 12:00</span>
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>302</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Upcoming Lesson 2 */}
-          <div className="bg-white/5 p-4 rounded-2xl border border-white/5 relative overflow-hidden">
-            <div className="absolute left-0 top-3 bottom-3 w-1 bg-white/20 rounded-r-full"></div>
-            <div className="flex justify-between items-center pl-3">
-              <div>
-                <h3 className="font-bold text-white">Английский</h3>
-                <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
-                  <span>12:10 - 12:55</span>
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>205</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Upcoming Lesson 3 */}
-          <div className="bg-white/5 p-4 rounded-2xl border border-white/5 relative overflow-hidden">
-            <div className="absolute left-0 top-3 bottom-3 w-1 bg-white/20 rounded-r-full"></div>
-            <div className="flex justify-between items-center pl-3">
-              <div>
-                <h3 className="font-bold text-white">Литература</h3>
-                <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
-                  <span>13:05 - 13:50</span>
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>301</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 

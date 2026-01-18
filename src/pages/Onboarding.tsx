@@ -166,6 +166,12 @@ export const Onboarding = () => {
   const [showPasswordError, setShowPasswordError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
+  // Schedule upload state
+  const [scheduleImage, setScheduleImage] = useState<string | null>(null);
+  const [scheduleImageFile, setScheduleImageFile] = useState<File | null>(null);
+  const [isRecognizing, setIsRecognizing] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<string>('2 группа');
+
   // Login specific states
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -196,9 +202,6 @@ export const Onboarding = () => {
         : [...prev, dayIndex]
     );
   };
-
-  // Schedule upload state
-  const [scheduleImage, setScheduleImage] = useState<string | null>(null);
 
   // Daily routine state
   const [wakeUpTime, setWakeUpTime] = useState('07:00');
@@ -374,6 +377,7 @@ export const Onboarding = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setScheduleImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setScheduleImage(reader.result as string);
@@ -382,9 +386,60 @@ export const Onboarding = () => {
     }
   };
 
+  const handleRecognizeSchedule = async () => {
+    if (!scheduleImageFile) return;
+    
+    setIsRecognizing(true);
+    try {
+      const { recognizeScheduleFromImage } = await import('../services/geminiService');
+      const recognizedItems = await recognizeScheduleFromImage(scheduleImageFile, selectedGroup);
+      
+      if (recognizedItems && recognizedItems.length > 0) {
+        // Map days from Russian names to indices
+        const dayMap: { [key: string]: number } = {
+          'понедельник': 0, 'вторник': 1, 'среда': 2, 'четверг': 3, 'пятница': 4, 'суббота': 5, 'воскресенье': 6
+        };
+
+        // Get the date for each day of the current week
+        const today = new Date();
+        const startOfWeekDate = new Date(today);
+        const currentDay = today.getDay(); // 0 is Sunday
+        const diff = today.getDate() - (currentDay === 0 ? 6 : currentDay - 1);
+        startOfWeekDate.setDate(diff);
+
+        recognizedItems.forEach(item => {
+          const dayIdx = dayMap[item.day?.toLowerCase() || ''];
+          if (dayIdx !== undefined) {
+            const eventDate = new Date(startOfWeekDate);
+            eventDate.setDate(startOfWeekDate.getDate() + dayIdx);
+            
+            addScheduleEvent({
+              title: item.title,
+              date: format(eventDate, 'yyyy-MM-dd'),
+              startTime: item.start,
+              endTime: item.end,
+              type: 'school',
+              room: item.room
+            });
+          }
+        });
+        
+        // Save group to settings
+        updateSettings({ group: selectedGroup });
+        setView('daily-routine');
+      }
+    } catch (error) {
+      console.error("Recognition failed:", error);
+      // Fallback to next step if recognition fails
+      setView('daily-routine');
+    } finally {
+      setIsRecognizing(false);
+    }
+  };
+
   const renderCarousel = () => (
-    <div className="flex-1 relative overflow-y-auto custom-scrollbar flex flex-col h-full">
-      <div className="flex-1 relative min-h-[600px]">
+    <div className="flex-1 relative flex flex-col h-full overflow-hidden">
+      <div className="flex-1 relative min-h-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
@@ -399,7 +454,7 @@ export const Onboarding = () => {
             className="absolute inset-0 flex flex-col cursor-grab active:cursor-grabbing"
           >
             {/* Image Container */}
-            <div className="h-[60%] w-full relative">
+            <div className="h-[55%] w-full relative">
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background z-10" />
               <img 
                 src={slides[currentSlide].image} 
@@ -409,11 +464,11 @@ export const Onboarding = () => {
             </div>
             
             {/* Text Container */}
-            <div className="flex-1 px-8 pt-8 flex flex-col items-center text-center">
-              <h2 className="text-3xl font-bold mb-4 text-[#8B5CF6]">
+            <div className="flex-1 px-8 pt-6 flex flex-col items-center text-center overflow-y-auto custom-scrollbar">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-[#8B5CF6]">
                 {slides[currentSlide].title}
               </h2>
-              <p className="text-gray-400 text-lg leading-relaxed">
+              <p className="text-gray-400 text-base sm:text-lg leading-relaxed">
                 {slides[currentSlide].description}
               </p>
             </div>
@@ -421,12 +476,12 @@ export const Onboarding = () => {
         </AnimatePresence>
 
         {/* Indicators */}
-        <div className="absolute bottom-4 w-full flex justify-center gap-2 z-20">
+        <div className="absolute bottom-2 w-full flex justify-center gap-2 z-20">
           {slides.map((_, idx) => (
             <div 
               key={idx}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                idx === currentSlide ? "w-8 bg-primary" : "w-2 bg-gray-600"
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                idx === currentSlide ? "w-6 bg-primary" : "w-1.5 bg-gray-600"
               }`}
             />
           ))}
@@ -434,39 +489,39 @@ export const Onboarding = () => {
       </div>
 
       {/* Buttons */}
-      <div className="p-8 pb-12">
+      <div className="p-6 pb-8 sm:p-8 sm:pb-12">
         {currentSlide === slides.length - 1 ? (
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             <button 
               onClick={() => setView('register')}
-              className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-colors text-lg"
+              className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 sm:py-4 rounded-xl transition-colors text-base sm:text-lg"
             >
               Зарегистрироваться
             </button>
             <button 
               onClick={() => setView('login')}
-              className="w-full bg-surface border border-white/10 hover:bg-white/5 text-white font-bold py-4 rounded-xl transition-colors text-lg"
+              className="w-full bg-surface border border-white/10 hover:bg-white/5 text-white font-bold py-3 sm:py-4 rounded-xl transition-colors text-base sm:text-lg"
             >
               Войти
             </button>
 
-            <div className="relative flex items-center gap-4 py-1">
+            <div className="relative flex items-center gap-4 py-0.5 sm:py-1">
                 <div className="flex-1 h-[1px] bg-white/10"></div>
-                <span className="text-gray-500 text-sm">или</span>
+                <span className="text-gray-500 text-xs sm:text-sm">или</span>
                 <div className="flex-1 h-[1px] bg-white/10"></div>
             </div>
 
             <button 
-                className="w-full bg-white text-gray-700 font-semibold py-4 rounded-xl transition-colors hover:bg-gray-100 flex items-center justify-center gap-3"
+                className="w-full bg-white text-gray-700 font-semibold py-3 sm:py-4 rounded-xl transition-colors hover:bg-gray-100 flex items-center justify-center gap-3 text-sm sm:text-base"
             >
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" />
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5 sm:w-6 sm:h-6" />
                 Войти через Google
             </button>
           </div>
         ) : (
           <button 
             onClick={handleNext}
-            className="w-full bg-white text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors text-lg"
+            className="w-full bg-white text-black font-bold py-3 sm:py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors text-base sm:text-lg"
           >
             Далее <ChevronRight size={20} />
           </button>
@@ -1129,11 +1184,40 @@ export const Onboarding = () => {
       <div className="relative z-20 w-full max-w-md mx-auto flex flex-col pb-20 pt-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-3 text-primary">
-                Загрузите расписание уроков
+                Загрузите расписание
             </h2>
             <p className="text-gray-300 text-sm leading-relaxed">
-                Сфотографируйте или загрузите скриншот вашего расписания уроков на неделю. ИИ распознает его автоматически.
+                Сфотографируйте или загрузите скриншот вашего расписания. ИИ распознает его автоматически.
             </p>
+          </div>
+
+          {/* Group Selection */}
+          <div className="mb-6 space-y-3">
+            <label className="text-sm text-gray-400 ml-1">Выберите вашу группу</label>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setSelectedGroup('1 группа')}
+                className={clsx(
+                  "flex-1 py-3 rounded-xl border transition-all font-medium",
+                  selectedGroup === '1 группа' 
+                    ? "bg-primary text-white border-primary" 
+                    : "bg-white/5 backdrop-blur-md border-white/10 text-gray-400 hover:bg-white/10"
+                )}
+              >
+                1 ГРУППА
+              </button>
+              <button
+                onClick={() => setSelectedGroup('2 группа')}
+                className={clsx(
+                  "flex-1 py-3 rounded-xl border transition-all font-medium",
+                  selectedGroup === '2 группа' 
+                    ? "bg-primary text-white border-primary" 
+                    : "bg-white/5 backdrop-blur-md border-white/10 text-gray-400 hover:bg-white/10"
+                )}
+              >
+                2 ГРУППА
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 flex flex-col justify-center items-center mb-8">
@@ -1174,7 +1258,10 @@ export const Onboarding = () => {
                         />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <button 
-                                onClick={() => setScheduleImage(null)}
+                                onClick={() => {
+                                  setScheduleImage(null);
+                                  setScheduleImageFile(null);
+                                }}
                                 className="bg-red-500/80 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors flex items-center gap-2"
                             >
                                 <Trash2 size={16} />
@@ -1187,11 +1274,22 @@ export const Onboarding = () => {
           </div>
 
           <button 
-            onClick={() => setView('daily-routine')}
-            className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg mb-8 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!scheduleImage}
+            onClick={handleRecognizeSchedule}
+            className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg mb-8 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+            disabled={!scheduleImage || isRecognizing}
           >
-            Далее
+            {isRecognizing ? (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full"
+                />
+                Распознавание...
+              </>
+            ) : (
+              'Распознать и продолжить'
+            )}
           </button>
       </div>
       {renderProgressBar()}

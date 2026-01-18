@@ -4,7 +4,7 @@ import os
 # Решение проблемы WinError 1114 и дублирования библиотек
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
@@ -80,6 +80,18 @@ async def summarize_video(request: TranscribeRequest):
     except Exception as e:
         print(f"Ошибка при суммаризации: {e}")
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
+
+@app.post("/recognize-schedule")
+async def recognize_schedule(file: UploadFile = File(...), group: str = ""):
+    try:
+        content = await file.read()
+        result = await gemini_service.recognize_schedule_from_image(content, file.content_type, group)
+        if result is None:
+            raise HTTPException(status_code=500, detail="Не удалось распознать расписание")
+        return {"status": "ok", "schedule": result}
+    except Exception as e:
+        print(f"Ошибка при распознавании расписания: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")
 async def health_check():

@@ -25,6 +25,7 @@ interface StoreState {
   addScheduleEvent: (event: Omit<ScheduleEvent, 'id'>) => void;
   updateScheduleEvent: (id: string, event: Partial<ScheduleEvent>) => void;
   removeScheduleEvent: (id: string) => void;
+  clearSchoolSchedule: () => void;
   addTask: (task: Omit<Task, 'id' | 'isCompleted'>) => void;
   removeTask: (id: string) => void;
   toggleTask: (id: string) => void;
@@ -76,8 +77,8 @@ export const useStore = create<StoreState>()(
   persist(
     (set) => ({
       hasOnboarded: false,
-      tasks: mockTasks,
-      schedule: mockSchedule,
+      tasks: [],
+      schedule: [],
       notes: [],
       settings: {
         wakeUpTime: '07:00',
@@ -115,6 +116,10 @@ export const useStore = create<StoreState>()(
 
       removeScheduleEvent: (id) => set((state) => ({
         schedule: state.schedule.filter(e => e.id !== id)
+      })),
+
+      clearSchoolSchedule: () => set((state) => ({
+        schedule: state.schedule.filter(e => e.type !== 'school')
       })),
 
       addTask: (task) => set((state) => ({

@@ -13,9 +13,9 @@ export const Layout = ({ children }: LayoutProps) => {
   const isAIChat = location.pathname === '/ai-chat';
 
   return (
-    <div className="min-h-screen bg-background text-white font-sans flex justify-center">
+    <div className="h-[100dvh] bg-background text-white font-sans flex justify-center overflow-hidden">
       <div className={clsx(
-        "w-full min-h-screen relative shadow-2xl shadow-black flex flex-col overflow-hidden",
+        "w-full h-full relative shadow-2xl shadow-black flex flex-col overflow-hidden",
         !isAIChat && "max-w-md",
         isDashboard 
           ? "bg-gradient-to-br from-[#1a0536] via-[#050505] via-70% to-[#0a1029]" 

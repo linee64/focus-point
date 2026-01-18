@@ -20,6 +20,7 @@ export interface ScheduleEvent {
   type: 'school' | 'sleep' | 'activity' | 'study' | 'break';
   taskId?: string; // If linked to a task
   subtasks?: string[];
+  room?: string; // Room/classroom number
 }
 
 export interface UserSettings {
@@ -37,6 +38,7 @@ export interface UserSettings {
     endTime: string;
     type: string;
   }[];
+  group?: string; // User's study group
 }
 
 export interface Note {

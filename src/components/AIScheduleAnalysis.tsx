@@ -97,14 +97,13 @@ export const AIScheduleAnalysis: React.FC<AIScheduleAnalysisProps> = ({ selected
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // Автоматически генерируем план только если его нет или данные изменились
+    // Автоматически генерируем план ТОЛЬКО если его вообще нет для этой даты
     if (selectedDate >= today) {
-      const fingerprint = generateFingerprint();
-      if (!currentPlan || currentPlan.fingerprint !== fingerprint) {
+      if (!currentPlan) {
         performAnalysis();
       }
     }
-  }, [selectedDate, schedule, settings]);
+  }, [selectedDate]); // Убираем schedule и settings из зависимостей, чтобы не регенерировать при изменениях
 
   const toggleComplete = (id: string) => {
     toggleAIPlanItem(dateKey, id);

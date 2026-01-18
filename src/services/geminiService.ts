@@ -69,12 +69,49 @@ export const chatWithAI = async (message: string, history: any[] = []) => {
   }
 };
 
+/**
+ * Распознает расписание по изображению через бэкенд
+ */
+export const recognizeScheduleFromImage = async (imageFile: File, group: string = ""): Promise<PlanItem[]> => {
+  const formData = new FormData();
+  formData.append('file', imageFile);
+  formData.append('group', group);
+
+  try {
+    const response = await fetch(`${BASE_URL}/recognize-schedule`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Ошибка при распознавании расписания');
+    }
+
+    const data = await response.json();
+    return data.schedule.map((item: any) => ({
+      start: item.start,
+      end: item.end,
+      title: item.title,
+      room: item.room,
+      day: item.day,
+      type: 'school',
+      isRecommendation: false
+    }));
+  } catch (error: any) {
+    console.error("Error in recognizeScheduleFromImage:", error);
+    throw new Error(error.message || "Не удалось распознать расписание.");
+  }
+};
+
 export interface PlanItem {
   start: string;
   end: string;
   title: string;
   type: 'rest' | 'productivity' | 'activity' | 'routine' | 'school' | 'sleep' | 'meal';
   isRecommendation: boolean;
+  room?: string;
+  day?: string;
 }
 
 export interface ScheduleAnalysis {

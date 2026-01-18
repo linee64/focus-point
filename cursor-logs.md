@@ -266,3 +266,60 @@
     - Updated `geminiService.ts` with `analyzeSchedule` method and unified backend port to `8001`.
     - Integrated the analysis component into the `Schedule.tsx` page, positioned below the events summary.
     - Added loading states and error handling for the AI analysis process.
+
+## 2026-01-18
+- **AI Schedule Stability**:
+    - Disabled automatic schedule regeneration by AI on every entry or settings change.
+    - AI now only generates a plan if none exists for the selected date.
+    - Removed mock tasks and schedule items from the initial store state to prevent false change triggers.
+- **Dynamic Date & Weekend Visibility**:
+    - Implemented dynamic date display on the Dashboard using `date-fns` (formatted in Russian).
+    - Added weekend detection logic (`isWeekend`).
+    - **UI Update**: Hidden the "Today Stats" and "Schedule" sections on the Dashboard during weekends (Saturday and Sunday).
+    - Updated the Schedule page header to show the date currently selected in the calendar strip instead of always showing "Today".
+- **Recurring Activity Templates**:
+    - Enhanced `AddScheduleModal` to support "Daily" and "Weekly" templates.
+    - Recurring events are now automatically saved to `routineActivities` in the user settings.
+    - Added visual feedback ("Сохранено!" on the button) when a recurring event is saved as a template.
+- **Bug Fixes**:
+    - Fixed date inconsistency between the Dashboard and Schedule pages.
+    - Prevented duplicate entries in `routineActivities` when saving repeating events.
+- **Schedule Recognition from Image**:
+    - Integrated Gemini Vision API to recognize schedule from photos.
+    - Added `recognize_schedule` endpoint to the FastAPI backend.
+    - Implemented image upload and processing in `Profile.tsx`.
+    - Updated `Dashboard.tsx` to dynamically display recognized subjects and classroom numbers (`room`).
+    - Enhanced data types with `room` support for `ScheduleEvent`.
+    - **New**: Added support for multi-day schedule recognition (Mon-Fri).
+    - **New**: Added "Group" identification to filter subjects specifically for the user's group.
+    - **New**: Automatically distributes recognized items to correct dates in the current week.
+
+### 2026-01-18 (Session 2)
+
+- **UI Refinement**:
+    - Temporarily hidden the "Учеба" (School & Grade) section in `Profile.tsx` per user request.
+- **Date Debugging/Verification**:
+    - Temporarily overridden the "current date" in `Dashboard.tsx` and `Schedule.tsx` to **January 16th, 2026 (Friday)**.
+    - This allows for testing and verifying the schedule display logic for a specific workday.
+    - Updated "Today" indicator in the calendar to reflect Jan 16th.
+- **Group Recognition Improvement**:
+    - Added quick-selection buttons for "1 ГРУППА" and "2 ГРУППА" in the profile image upload section.
+    - Enhanced AI prompt to better distinguish between subgroup-specific and common classes.
+    - **Update**: Implemented specific table analysis logic: dividing the schedule into 5 horizontal blocks (days) and targeting specific vertical columns for groups (e.g., right column for "10S-2").
+- **Onboarding Enhancements**:
+    - Added study group selection (1 or 2 group) directly into the onboarding flow (Step 3).
+    - Integrated AI schedule recognition into the onboarding process: users can now upload a schedule image, and it will be automatically parsed and added to their calendar before finishing registration.
+    - Improved visual feedback with a loading spinner during AI recognition.
+    - Group selection is saved to user settings during onboarding.
+- **UI/UX Optimization**:
+    - Fixed vertical scrolling issues on the Onboarding carousel.
+    - Implemented a "Lock Height" approach using `100dvh` in `Layout.tsx` to prevent pages from stretching and forcing scroll on mobile devices.
+    - Adjusted font sizes and padding in the onboarding slides to fit smaller screens without requiring a scroll.
+    - Restricted overall container height to the viewport to ensure a "native app" feel.
+
+### 2026-01-18 (Session 3)
+
+- **Исправление логики колонок**:
+    - Усилил инструкции для Gemini, чтобы исключить путаницу между 1-й и 2-й группами.
+    - Явно прописал связь: Левая колонка = 1 Группа (10S-1), Правая колонка = 2 Группа (10S-2).
+    - Добавил строгий запрет на извлечение данных из чужой колонки.
