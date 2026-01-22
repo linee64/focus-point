@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Calendar as CalendarIcon, Plus, Bell, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, Bell, Sparkles, ChevronLeft, ChevronRight, MapPin, Pencil, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format, addDays, startOfWeek, isSameDay, addWeeks, subWeeks } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -9,10 +9,15 @@ import { AddScheduleModal } from '../components/AddScheduleModal';
 import { AIScheduleAnalysis } from '../components/AIScheduleAnalysis';
 
 export const Schedule = () => {
-  const { setNotificationsOpen, isAddScheduleOpen, setAddScheduleOpen, schedule } = useStore();
-  const [selectedDate, setSelectedDate] = useState(new Date('2026-01-16'));
-  const [baseDate, setBaseDate] = useState(new Date('2026-01-16'));
+  const { setNotificationsOpen, isAddScheduleOpen, setAddScheduleOpen, schedule, removeScheduleEvent } = useStore();
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [baseDate, setBaseDate] = useState(new Date());
   const [editingEvent, setEditingEvent] = useState<any>(null);
+
+  const handleEdit = (event: any) => {
+    setEditingEvent(event);
+    setAddScheduleOpen(true);
+  };
 
   const handleCloseModal = () => {
     setAddScheduleOpen(false);
@@ -38,9 +43,7 @@ export const Schedule = () => {
       {/* Header */}
       <header className="flex justify-between items-center pt-2 px-1">
         <div className="flex gap-3 items-center">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <Sparkles className="text-white w-5 h-5" />
-          </div>
+          <img src="/logotype.png" alt="SleamAI Logo" className="w-14 h-14 object-contain" />
           <div>
             <h1 className="text-xl font-bold text-[#8B5CF6]">SleamAI</h1>
             <p className="text-xs text-gray-400 capitalize">
@@ -97,7 +100,7 @@ export const Schedule = () => {
       <div className="flex justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide px-1">
         {weekDays.map((date, i) => {
           const isSelected = isSameDay(date, selectedDate);
-          const isToday = isSameDay(date, new Date('2026-01-16'));
+          const isToday = isSameDay(date, new Date());
           return (
             <div
               key={i}
@@ -126,8 +129,6 @@ export const Schedule = () => {
 
       {/* Events List */}
       <div className="space-y-4">
-        <p className="text-gray-500 text-sm">{format(selectedDate, 'EEEE', { locale: ru })} • {filteredSchedule.length} событий</p>
-        
         {/* AI Analysis Component */}
         <AIScheduleAnalysis selectedDate={selectedDate} />
       </div>

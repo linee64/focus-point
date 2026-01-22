@@ -222,9 +222,7 @@ export const AIChat = () => {
         </button>
         
         <div className="p-3 bg-[#18181B]/80 backdrop-blur-xl border border-white/10 rounded-2xl pointer-events-auto shadow-2xl flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
+          <img src="/logotype.png" alt="SleamAI Logo" className="w-12 h-12 object-contain" />
           <div className="hidden sm:block pr-2">
             <h1 className="text-xs font-bold">SleamAI</h1>
           </div>

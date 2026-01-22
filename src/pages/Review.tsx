@@ -39,9 +39,7 @@ export const Review = () => {
       {/* Header */}
       <header className="flex justify-between items-center pt-2 px-1">
         <div className="flex gap-3 items-center">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <Sparkles className="text-white w-5 h-5" />
-          </div>
+          <img src="/logotype.png" alt="SleamAI Logo" className="w-14 h-14 object-contain" />
           <div>
             <h1 className="text-xl font-bold text-[#8B5CF6]">SleamAI</h1>
             <p className="text-xs text-gray-400">Суббота, 3 Января</p>

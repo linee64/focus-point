@@ -1,3 +1,6 @@
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+
 const BASE_URL = 'http://127.0.0.1:8001';
 
 /**
@@ -120,35 +123,47 @@ export interface ScheduleAnalysis {
 }
 
 export const analyzeSchedule = async (date: string, schedule: any[], settings: any): Promise<ScheduleAnalysis> => {
+  const dateObj = new Date(date);
+  const formattedDateForAI = format(dateObj, 'd MMMM', { locale: ru });
+  const dayName = format(dateObj, 'EEEE', { locale: ru });
+  const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+
   const prompt = `
-    Проанализируй мой график на ${date} и составь ПОЛНЫЙ идеальный план дня.
+    Проанализируй мой график на ${formattedDateForAI} (${dayName}) и составь ПОЛНЫЙ идеальный план дня.
     
-    Мои настройки дня:
+    ВАЖНО: Следующие активности являются ШАБЛОНОМ. Они ДОЛЖНЫ быть в плане каждый день строго в указанное время:
     - Подъем: ${settings.wakeUpTime}
     - Отбой: ${settings.bedTime}
     - Завтрак: ${settings.breakfastTime}
     - Обед: ${settings.lunchTime}
     - Ужин: ${settings.dinnerTime}
-    - Школа: ${settings.schoolStart} - ${settings.schoolEnd}
-    - Время в пути до школы: ${settings.commuteTime} минут
+    
+    ШКОЛА:
+    ${isWeekend 
+      ? "- Сегодня ВЫХОДНОЙ (суббота или воскресенье), поэтому ШКОЛЫ И ПУТИ ДО НЕЕ НЕТ. НЕ ВКЛЮЧАЙ школу в план." 
+      : `- Школа: ${settings.schoolStart} - ${settings.schoolEnd} (обязательно включи время в пути по ${settings.commuteTime} мин до и после)`}
 
     Мои постоянные активности (шаблон):
     ${(settings?.routineActivities || []).length > 0 
       ? settings.routineActivities.map((a: any) => `- ${a.startTime} - ${a.endTime}: ${a.title}`).join('\n')
-      : 'Нет постоянных активностей'}
+      : 'Нет дополнительных постоянных активностей'}
 
-    Мои существующие активности на этот конкретный день:
+    Мои специфические активности на этот конкретный день (из расписания):
     ${(schedule || []).length > 0 ? schedule.map(e => `- ${e.startTime} - ${e.endTime}: ${e.title} (${e.type})`).join('\n') : 'Нет специфических активностей'}
 
     Твоя задача:
     1. Составь последовательный план дня с момента подъема до отбоя.
-    2. ОБЯЗАТЕЛЬНО включи время в пути ДО и ПОСЛЕ школы (по ${settings.commuteTime} мин).
-    3. ВКЛЮЧИ в план все мои постоянные активности, рутинные дела (сон, еда, школа) и специфические активности на день.
-    4. Все, что указано в настройках и существующем графике, должно стоять в плане по умолчанию (isRecommendation: false).
-    5. Найди свободные промежутки времени и ЗАПОЛНИ их полезными рекомендациями (isRecommendation: true).
-    6. Дай общий краткий совет по продуктивности на этот день.
+    2. Используй ШАБЛОН выше (подъем, еда, отбой) как незыблемую основу. Они ДОЛЖНЫ быть в плане каждый день, включая выходные.
+    3. ${isWeekend 
+        ? "В плане НЕ ДОЛЖНО быть школы и времени в пути. Заполни это время отдыхом или полезными делами." 
+        : 'ОБЯЗАТЕЛЬНО объедини все школьные уроки в один блок "Школа" с общим временем начала и конца. Включи время в пути.'}
+    4. ВКЛЮЧИ в план все мои постоянные и специфические активности.
+    5. Все шаблонные и мои активности должны иметь isRecommendation: false.
+    6. ЗАПОЛНИ все свободное время (которого в выходные будет гораздо больше) интересными и полезными рекомендациями (isRecommendation: true) для отдыха, саморазвития или хобби. План должен быть насыщенным и полным, а не пустым!
+    7. Дай общий краткий совет по продуктивности на этот день.
 
-    ОТВЕТЬ СТРОГО В ФОРМАТЕ JSON. Не пиши ничего, кроме JSON.
+    ОТВЕТЬ СТРОГО В ФОРМАТЕ JSON. Не пиши ничего, кроме JSON. 
+    ВАЖНО: Избегай специальных символов в строках (кавычки, обратные слеши). Если они необходимы, экранируй их правильно (\\).
     Пример структуры:
     {
       "analysis": "краткий текст анализа дня",
@@ -183,15 +198,26 @@ export const analyzeSchedule = async (date: string, schedule: any[], settings: a
     
     let jsonStr = jsonMatch[0];
     
-    // Удаление лишних запятых перед закрывающими скобками (частая ошибка ИИ)
-    jsonStr = jsonStr.replace(/,\s*([\]}])/g, '$1');
+    // Очистка JSON от типичных ошибок ИИ
+    jsonStr = jsonStr
+      .replace(/,\s*([\]}])/g, '$1') // Удаление лишних запятых
+      .replace(/\\(?!["\\\/bfnrtu])/g, '\\\\'); // Экранирование одиночных обратных слешей
 
     try {
       return JSON.parse(jsonStr);
     } catch (parseError) {
-      console.error("Failed to parse JSON:", jsonStr);
-      console.error("Original response:", response);
-      throw new Error("Ошибка при обработке плана дня. Попробуйте еще раз.");
+      // Попытка еще более агрессивной очистки если первый раз не вышло
+      try {
+        const ultraClean = jsonStr
+          .replace(/[\u0000-\u001F\u007F-\u009F]/g, "") // Удаление невидимых управляющих символов
+          .replace(/\\/g, "\\\\") // Экранируем ВСЕ слеши (рискованно, но может помочь)
+          .replace(/\\\\"/g, "\\\""); // Возвращаем экранированные кавычки обратно
+        return JSON.parse(ultraClean);
+      } catch (e) {
+        console.error("Failed to parse JSON even after cleaning:", jsonStr);
+        console.error("Original response:", response);
+        throw new Error("Ошибка при обработке плана дня. Попробуйте еще раз.");
+      }
     }
   } catch (error) {
     console.error("Error in analyzeSchedule:", error);

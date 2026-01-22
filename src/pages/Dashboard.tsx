@@ -18,11 +18,11 @@ export const Dashboard = () => {
     schedule 
   } = useStore();
 
-  const todayStr = '2026-01-16'; // Временно фиксированная дата для проверки
-  const todayDate = new Date('2026-01-16');
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const todayDate = new Date();
   const todaySchedule = schedule
-    .filter(e => e.date === todayStr)
-    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+    .filter(e => e.date === todayStr && e.type === 'school')
+    .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
 
   const activeTasks = tasks.filter(t => !t.isCompleted).slice(0, 3);
 
@@ -89,9 +89,7 @@ export const Dashboard = () => {
       {/* Header */}
       <header className="flex justify-between items-center pt-2 px-1">
         <div className="flex gap-3 items-center">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <Sparkles className="text-white w-5 h-5" />
-          </div>
+          <img src="/logotype.png" alt="SleamAI Logo" className="w-14 h-14 object-contain" />
           <div>
             <h1 className="text-xl font-bold text-[#8B5CF6]">SleamAI</h1>
             <p className="text-xs text-gray-400 capitalize">
@@ -174,7 +172,9 @@ export const Dashboard = () => {
                   <div className={clsx(
                     "absolute left-0 top-3 bottom-3 w-1 rounded-r-full",
                     isCurrent ? "bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]" : 
-                    isPast ? "bg-green-500" : "bg-white/20"
+                    isPast ? "bg-green-500" : 
+                    event.type === 'routine' ? "bg-blue-400" :
+                    event.type === 'activity' ? "bg-orange-400" : "bg-white/20"
                   )}></div>
                   
                   <div className="flex justify-between items-center pl-3">
@@ -187,7 +187,7 @@ export const Dashboard = () => {
                         {event.title}
                       </h3>
                       <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-                        <span>{event.startTime} - {event.endTime}</span>
+                        <span>{event.startTime}{event.endTime && event.endTime !== event.startTime ? ` - ${event.endTime}` : ''}</span>
                         {event.type === 'school' && (
                             <div className="flex items-center gap-1">
                               <MapPin className="w-3 h-3" />

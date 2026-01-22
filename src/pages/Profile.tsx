@@ -26,7 +26,7 @@ import { format, startOfWeek, addDays, parse } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
 export const Profile = () => {
-  const { logout, setNotificationsOpen, tasks, notes, settings, addScheduleEvent, updateSettings, clearSchoolSchedule } = useStore();
+  const { user, logout, setNotificationsOpen, tasks, notes, settings, addScheduleEvent, updateSettings, clearSchoolSchedule } = useStore();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [school, setSchool] = useState('');
   const [grade, setGrade] = useState('');
@@ -40,6 +40,11 @@ export const Profile = () => {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const handleGroupSelect = (group: string) => {
+    setTempGroup(group);
+    updateSettings({ group });
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -47,11 +52,6 @@ export const Profile = () => {
     if (!tempGroup.trim()) {
       alert('Пожалуйста, укажите вашу группу перед загрузкой расписания');
       return;
-    }
-
-    // Сохраняем группу в настройки если она изменилась
-    if (tempGroup !== settings.group) {
-      updateSettings({ group: tempGroup });
     }
 
     setIsRecognizing(true);
@@ -125,9 +125,7 @@ export const Profile = () => {
       {/* Header */}
       <header className="flex justify-between items-center pt-2 px-1">
         <div className="flex gap-3 items-center">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <Sparkles className="text-white w-5 h-5" />
-          </div>
+          <img src="/logotype.png" alt="SleamAI Logo" className="w-14 h-14 object-contain" />
           <div>
             <h1 className="text-xl font-bold text-[#8B5CF6]">SleamAI</h1>
             <p className="text-xs text-gray-400 capitalize">
@@ -157,7 +155,9 @@ export const Profile = () => {
                 <User className="w-8 h-8 text-white" />
             </div>
             <div>
-                <h3 className="text-xl font-bold">Александр</h3>
+                <h3 className="text-xl font-bold">
+                  {user ? `${user.name} ${user.surname}` : 'Гость'}
+                </h3>
                 <p className="text-sm text-gray-400">10 класс • {settings.group || 'Группа не указана'}</p>
             </div>
          </div>
@@ -216,13 +216,13 @@ export const Profile = () => {
               <label className="text-[10px] font-bold text-purple-300 uppercase tracking-wider">Твоя группа / класс</label>
               <div className="flex gap-2">
                 <button 
-                  onClick={() => setTempGroup('1 группа')}
+                  onClick={() => handleGroupSelect('1 группа')}
                   className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${tempGroup === '1 группа' ? 'bg-purple-500 text-white' : 'bg-white/5 text-purple-400 border border-purple-500/20'}`}
                 >
                   1 ГРУППА
                 </button>
                 <button 
-                  onClick={() => setTempGroup('2 группа')}
+                  onClick={() => handleGroupSelect('2 группа')}
                   className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${tempGroup === '2 группа' ? 'bg-purple-500 text-white' : 'bg-white/5 text-purple-400 border border-purple-500/20'}`}
                 >
                   2 ГРУППА
@@ -236,7 +236,10 @@ export const Profile = () => {
               <input 
                 type="text"
                 value={tempGroup}
-                onChange={(e) => setTempGroup(e.target.value)}
+                onChange={(e) => {
+                  setTempGroup(e.target.value);
+                  updateSettings({ group: e.target.value });
+                }}
                 placeholder="Например: ПИ-21 или 1 группа"
                 className="w-full bg-white/5 border border-purple-500/30 rounded-xl py-3 pl-11 pr-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
               />

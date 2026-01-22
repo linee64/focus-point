@@ -59,7 +59,7 @@ export const AIScheduleAnalysis: React.FC<AIScheduleAnalysisProps> = ({ selected
     setError(null);
     try {
       const result = await analyzeSchedule(
-        format(selectedDate, 'd MMMM', { locale: ru }),
+        format(selectedDate, 'yyyy-MM-dd'),
         daySchedule,
         settings
       );
