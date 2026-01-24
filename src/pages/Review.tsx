@@ -3,6 +3,8 @@ import { Bell, Sparkles, Upload, Link as LinkIcon, FileText, Send, Trash2 } from
 import { useStore } from '../store/useStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 export const Review = () => {
   const { setNotificationsOpen, notes, removeNote } = useStore();
@@ -39,10 +41,12 @@ export const Review = () => {
       {/* Header */}
       <header className="flex justify-between items-center pt-2 px-1">
         <div className="flex gap-3 items-center">
-          <img src="/logotype.png" alt="SleamAI Logo" className="w-16 h-16 object-contain" />
+          <img src="/logotype.png" alt="SleamAI Logo" className="w-20 h-20 object-contain" />
           <div>
             <h1 className="text-xl font-bold text-[#8B5CF6]">SleamAI</h1>
-            <p className="text-xs text-gray-400">Суббота, 3 Января</p>
+            <p className="text-xs text-gray-400 capitalize">
+              {format(new Date(), 'EEEE, d MMMM', { locale: ru })}
+            </p>
           </div>
         </div>
         <button 

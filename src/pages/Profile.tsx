@@ -24,9 +24,21 @@ import { DailyRoutineModal } from '../components/DailyRoutineModal';
 import { recognizeScheduleFromImage } from '../services/geminiService';
 import { format, startOfWeek, addDays, parse } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { supabase } from '../services/supabase';
 
 export const Profile = () => {
-  const { user, logout, setNotificationsOpen, tasks, notes, settings, addScheduleEvent, updateSettings, clearSchoolSchedule } = useStore();
+  const { 
+    user, 
+    logout, 
+    setNotificationsOpen, 
+    tasks, 
+    notes, 
+    settings, 
+    addScheduleEvent, 
+    updateSettings, 
+    clearSchoolSchedule,
+    streak 
+  } = useStore();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [school, setSchool] = useState('');
   const [grade, setGrade] = useState('');
@@ -37,8 +49,40 @@ export const Profile = () => {
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [recognitionSuccess, setRecognitionSuccess] = useState(false);
   const [tempGroup, setTempGroup] = useState(settings.group || '');
+  const [isSendingFeedback, setIsSendingFeedback] = useState(false);
+  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSendFeedback = async () => {
+    if (!feedback.trim() || rating === 0) return;
+
+    setIsSendingFeedback(true);
+    try {
+      const { data: { user: sbUser } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase.from('feedback').insert([
+        { 
+          user_id: sbUser?.id,
+          rating, 
+          content: feedback,
+          user_name: user ? `${user.name} ${user.surname}` : 'Anonymous'
+        }
+      ]);
+
+      if (error) throw error;
+
+      setFeedbackSuccess(true);
+      setFeedback('');
+      setRating(0);
+      setTimeout(() => setFeedbackSuccess(false), 3000);
+    } catch (error) {
+      console.error('Error sending feedback:', error);
+      alert('Не удалось отправить отзыв. Попробуйте позже.');
+    } finally {
+      setIsSendingFeedback(false);
+    }
+  };
 
   const handleGroupSelect = (group: string) => {
     setTempGroup(group);
@@ -125,7 +169,7 @@ export const Profile = () => {
       {/* Header */}
       <header className="flex justify-between items-center pt-2 px-1">
         <div className="flex gap-3 items-center">
-          <img src="/logotype.png" alt="SleamAI Logo" className="w-16 h-16 object-contain" />
+          <img src="/logotype.png" alt="SleamAI Logo" className="w-20 h-20 object-contain" />
           <div>
             <h1 className="text-xl font-bold text-[#8B5CF6]">SleamAI</h1>
             <p className="text-xs text-gray-400 capitalize">
@@ -165,7 +209,7 @@ export const Profile = () => {
          <div className="grid grid-cols-3 gap-4 relative z-10">
             <div className="flex flex-col items-center gap-1">
                 <Flame className="w-5 h-5 text-orange-400 mb-1" />
-                <span className="text-lg font-bold">5 дней</span>
+                <span className="text-lg font-bold">{streak} {streak === 1 ? 'день' : streak > 1 && streak < 5 ? 'дня' : 'дней'}</span>
                 <span className="text-[10px] text-gray-500 font-medium">Streak</span>
             </div>
             <div className="flex flex-col items-center gap-1 border-x border-white/5">
@@ -474,14 +518,27 @@ export const Profile = () => {
             />
 
             <button
-                disabled={!feedback.trim() || rating === 0}
-                className={`w-full py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] ${
-                    feedback.trim() && rating !== 0
+                onClick={handleSendFeedback}
+                disabled={!feedback.trim() || rating === 0 || isSendingFeedback}
+                className={`w-full py-3.5 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
+                    feedback.trim() && rating !== 0 && !isSendingFeedback
                         ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/20'
                         : 'bg-white/5 text-gray-500 cursor-not-allowed border border-white/5'
                 }`}
             >
-                Отправить отзыв
+                {isSendingFeedback ? (
+                    <>
+                        <Loader2 className="animate-spin" size={18} />
+                        Отправка...
+                    </>
+                ) : feedbackSuccess ? (
+                    <>
+                        <Check size={18} className="text-green-400" />
+                        Отправлено!
+                    </>
+                ) : (
+                    'Отправить отзыв'
+                )}
             </button>
         </div>
       </div>

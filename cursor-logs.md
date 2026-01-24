@@ -77,25 +77,29 @@
         - Fields: Subject, Title, Date, Type (Homework, Project, Exam).
         - Integrated into the "Add" button in `Dashboard.tsx`.
 
-## 2026-01-15
-- **AI Schedule Analysis Overhaul**:
-    - Integrated Gemini 2.5 Flash Lite as the primary model for schedule analysis.
-    - Converted the static free slot chart into an interactive AI-generated To-Do List.
-    - Implemented a caching system for AI plans in the Zustand store (`aiPlans`) to prevent unnecessary regeneration.
-    - Added "Fingerprinting" logic: the AI plan only regenerates if the user's schedule or settings (wake-up time, commute, etc.) change.
-    - Added a manual "Refresh" button to the AI plan header.
-    - UI Enhancements:
-        - Increased the size of the time span elements (`text-sm` with extra padding).
-        - Removed the purple gradient from the AI analysis card for a cleaner look.
-        - Standardized AI-generated cards to match user activity styling.
-- **Logo Size Adjustment**:
-    - Removed the circular background, overflow-hidden, and shadows from the logo container to make it "naked".
-    - Increased logo size from `w-14 h-14` (56px) to `w-16 h-16` (64px) on main pages (Dashboard, Schedule, Tasks, Review, Profile).
-    - Increased logo size in AIChat header from `w-12 h-12` (48px) to `w-14 h-14` (56px).
-- **Deployment & Mobile Fixes**:
-    - Added `rewrites` to `vercel.json` to fix 404 error on page refresh.
-    - Reverted IP address changes: returned `HOST` to `127.0.0.1` and `BASE_URL` to local address.
-- **Commute Time Integration**:
+## 2026-01-24
+- **Supabase Integration**:
+    - Installed `@supabase/supabase-js`.
+    - Created `src/services/supabase.ts` for Supabase client initialization.
+    - Added `.env.example` with required Supabase credentials.
+    - Updated `Onboarding.tsx`:
+        - Replaced mock registration with `supabase.auth.signUp`.
+        - Replaced mock login with `supabase.auth.signInWithPassword`.
+        - Implemented Google OAuth login via `supabase.auth.signInWithOAuth`.
+        - Added loading states (`isLoading`) and error handling (`authError`, `loginError`) for auth forms.
+    - Updated `useStore.ts`:
+        - Updated `logout` to perform `supabase.auth.signOut()` and clear local store.
+    - Updated `App.tsx`:
+        - Added session listener to automatically log in users with an active Supabase session.
+- **Feedback Integration**:
+    - Connected the feedback form in `Profile.tsx` to Supabase.
+    - Created `handleSendFeedback` to insert feedback data into a Supabase `feedback` table.
+    - Added loading and success states for the feedback submission button.
+- **Streak System**:
+    - Added `streak` and `lastLoginDate` to the global state.
+    - Implemented logic in `useStore` to update the streak automatically on app load.
+    - If a user skips a day, the streak resets to 1. If they log in consecutively, it increments.
+    - Updated `Profile.tsx` to display the real streak value with proper Russian pluralization.
     - Added `commuteTime` field to `UserSettings` and Onboarding.
     - Modified the Gemini prompt to automatically include commute time (e.g., "Дорога в школу") before and after school sessions.
 - **Recurring Routine Templates**:

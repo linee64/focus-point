@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Task, ScheduleEvent, UserSettings, Note, AIPlan, PlanItem } from '../types';
-import { addDays, format } from 'date-fns';
+import { addDays, format, differenceInDays, parseISO } from 'date-fns';
+import { supabase } from '../services/supabase';
 
 interface StoreState {
   hasOnboarded: boolean;
@@ -11,6 +12,8 @@ interface StoreState {
   settings: UserSettings;
   user?: { name: string; surname: string } | null;
   aiPlans: Record<string, AIPlan>;
+  streak: number;
+  lastLoginDate?: string | null;
   
   // UI State
   isNotificationsOpen: boolean;
@@ -36,6 +39,7 @@ interface StoreState {
   updateAIPlanItem: (date: string, itemId: string, updates: Partial<PlanItem>) => void;
   removeAIPlanItem: (date: string, itemId: string) => void;
   toggleAIPlanItem: (date: string, itemId: string) => void;
+  updateStreak: () => void;
   logout: () => void;
 }
 
@@ -93,6 +97,8 @@ export const useStore = create<StoreState>()(
       },
       user: null,
       aiPlans: {},
+      streak: 0,
+      lastLoginDate: null,
 
       // UI State
       isNotificationsOpen: false,
@@ -178,7 +184,7 @@ export const useStore = create<StoreState>()(
         };
       }),
 
-      toggleAIPlanItem: (date, itemId) => set((state) => {
+      toggleAIPlanItem: (date: string, itemId: string) => set((state) => {
         const plan = state.aiPlans[date];
         if (!plan) return state;
         return {
@@ -192,7 +198,37 @@ export const useStore = create<StoreState>()(
         };
       }),
 
-      logout: () => set({ hasOnboarded: false }),
+      updateStreak: () => set((state) => {
+        const today = new Date();
+        const todayStr = format(today, 'yyyy-MM-dd');
+        
+        if (!state.lastLoginDate) {
+          return { streak: 1, lastLoginDate: todayStr };
+        }
+
+        const lastLogin = parseISO(state.lastLoginDate);
+        const diff = differenceInDays(today, lastLogin);
+
+        if (diff === 0) {
+          return state; // Already logged in today
+        } else if (diff === 1) {
+          return { streak: state.streak + 1, lastLoginDate: todayStr }; // Consecutive day
+        } else {
+          return { streak: 1, lastLoginDate: todayStr }; // Streak broken
+        }
+      }),
+
+      logout: async () => {
+        await supabase.auth.signOut();
+        set({ 
+          hasOnboarded: false, 
+          user: null, 
+          tasks: [], 
+          schedule: [], 
+          notes: [], 
+          aiPlans: {} 
+        });
+      },
     }),
     {
       name: 'focuspoint-storage',

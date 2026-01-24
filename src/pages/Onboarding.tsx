@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { ChevronRight, ArrowLeft, Check, Eye, EyeOff, Plus, Trash2, Clock, X, Upload } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Check, Eye, EyeOff, Plus, Trash2, Clock, X, Upload, Loader2 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { clsx } from 'clsx';
 import Confetti from 'react-confetti';
 import { format } from 'date-fns';
+import { supabase } from '../services/supabase';
 
 // Custom Time Picker Component
 const TimePicker = ({ 
@@ -178,7 +179,9 @@ export const Onboarding = () => {
   const [isLoginEmailValid, setIsLoginEmailValid] = useState(false);
   const [showLoginPasswordInput, setShowLoginPasswordInput] = useState(false);
   const [loginShakeButton, setLoginShakeButton] = useState(false);
-  const [loginError, setLoginError] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Name input specific states
   const [firstName, setFirstName] = useState('');
@@ -278,9 +281,26 @@ export const Onboarding = () => {
     }
   };
 
-  const handleCreateAccount = () => {
+  const handleCreateAccount = async () => {
     if (isEmailValid && isPasswordValid) {
-      setView('name-input');
+      setIsLoading(true);
+      setAuthError(null);
+      try {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+        
+        setView('name-input');
+      } catch (error: any) {
+        setAuthError(error.message || 'Ошибка при регистрации');
+        setShakeButton(true);
+        setTimeout(() => setShakeButton(false), 500);
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       setShakeButton(true);
       if (!isPasswordValid) setShowPasswordError(true);
@@ -363,14 +383,38 @@ export const Onboarding = () => {
     completeOnboarding();
   };
 
-  const handleLogin = () => {
-    // Fake login validation
-    if (loginPassword.length >= 6) {
-        completeOnboarding();
-    } else {
-        setLoginShakeButton(true);
-        setLoginError(true);
-        setTimeout(() => setLoginShakeButton(false), 500);
+  const handleLogin = async () => {
+    setIsLoading(true);
+    setLoginError(null);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: loginPassword,
+      });
+
+      if (error) throw error;
+      
+      completeOnboarding();
+    } catch (error: any) {
+      setLoginShakeButton(true);
+      setLoginError(error.message || 'Неверный email или пароль');
+      setTimeout(() => setLoginShakeButton(false), 500);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      console.error('Error logging in with Google:', error.message);
     }
   };
 
@@ -512,6 +556,7 @@ export const Onboarding = () => {
             </div>
 
             <button 
+                onClick={handleGoogleLogin}
                 className="w-full bg-white text-gray-700 font-semibold py-3 sm:py-4 rounded-xl transition-colors hover:bg-gray-100 flex items-center justify-center gap-3 text-sm sm:text-base"
             >
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -665,13 +710,25 @@ export const Onboarding = () => {
                     <a href="#" className="text-primary hover:underline">Условиями использования</a>
                   </div>
 
+                  {authError && (
+                    <p className="text-red-500 text-sm text-center">{authError}</p>
+                  )}
+
                   <motion.button
                     onClick={handleCreateAccount}
+                    disabled={isLoading}
                     animate={shakeButton ? { x: [-20, 20, -20, 20, -10, 10, 0] } : {}}
                     transition={{ duration: 0.4 }}
-                    className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg"
+                    className="w-full bg-primary hover:bg-primary-hover disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-all text-lg flex items-center justify-center gap-2"
                   >
-                    Создать аккаунт
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="animate-spin" size={20} />
+                        Создание...
+                      </>
+                    ) : (
+                      'Создать аккаунт'
+                    )}
                   </motion.button>
                 </motion.div>
               )}
@@ -768,7 +825,7 @@ export const Onboarding = () => {
                               value={loginPassword}
                               onChange={(e) => {
                                   setLoginPassword(e.target.value);
-                                  setLoginError(false);
+                                  setLoginError(null);
                               }}
                               placeholder="Введите пароль"
                               className={`w-full bg-white/5 backdrop-blur-md border rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none transition-colors pr-12 ${
@@ -784,18 +841,26 @@ export const Onboarding = () => {
                           </div>
                           {loginError && (
                               <p className="text-xs text-red-500 ml-1">
-                                  Неверный пароль
+                                  {loginError}
                               </p>
                           )}
                         </div>
 
                         <motion.button
                           onClick={handleLogin}
+                          disabled={isLoading}
                           animate={loginShakeButton ? { x: [-20, 20, -20, 20, -10, 10, 0] } : {}}
                           transition={{ duration: 0.4 }}
-                          className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg mt-4"
+                          className="w-full bg-primary hover:bg-primary-hover disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-all text-lg mt-4 flex items-center justify-center gap-2"
                         >
-                          Войти
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="animate-spin" size={20} />
+                              Вход...
+                            </>
+                          ) : (
+                            'Войти'
+                          )}
                         </motion.button>
                     </motion.div>
                 )}

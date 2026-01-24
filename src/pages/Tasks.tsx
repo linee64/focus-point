@@ -69,7 +69,7 @@ export const Tasks = () => {
       {/* Header */}
       <header className="flex justify-between items-center pt-2 px-1">
         <div className="flex gap-3 items-center">
-          <img src="/logotype.png" alt="SleamAI Logo" className="w-16 h-16 object-contain" />
+          <img src="/logotype.png" alt="SleamAI Logo" className="w-20 h-20 object-contain" />
           <div>
             <h1 className="text-xl font-bold text-[#8B5CF6]">SleamAI</h1>
             <p className="text-xs text-gray-400 capitalize">
