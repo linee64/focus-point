@@ -90,8 +90,11 @@
         - Standardized AI-generated cards to match user activity styling.
 - **Logo Size Adjustment**:
     - Removed the circular background, overflow-hidden, and shadows from the logo container to make it "naked".
-    - Increased logo size from `w-12 h-12` (48px) to `w-14 h-14` (56px) on main pages (Dashboard, Schedule, Tasks, Review, Profile).
-    - Increased logo size in AIChat header from `w-10 h-10` (40px) to `w-12 h-12` (48px) and removed its container as well.
+    - Increased logo size from `w-14 h-14` (56px) to `w-16 h-16` (64px) on main pages (Dashboard, Schedule, Tasks, Review, Profile).
+    - Increased logo size in AIChat header from `w-12 h-12` (48px) to `w-14 h-14` (56px).
+- **Deployment & Mobile Fixes**:
+    - Added `rewrites` to `vercel.json` to fix 404 error on page refresh.
+    - Reverted IP address changes: returned `HOST` to `127.0.0.1` and `BASE_URL` to local address.
 - **Commute Time Integration**:
     - Added `commuteTime` field to `UserSettings` and Onboarding.
     - Modified the Gemini prompt to automatically include commute time (e.g., "Дорога в школу") before and after school sessions.
