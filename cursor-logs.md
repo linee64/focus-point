@@ -104,6 +104,9 @@
 - **Google Authentication**:
     - Added "Login/Register with Google" buttons to all authentication screens (`Login`, `Register`, `Carousel`).
     - Implemented logic to extract `first_name` and `last_name` from Google's `full_name` metadata in `App.tsx`.
+- **Vercel Deployment Fixes**:
+    - Fixed `package.json` build script by changing it to standard `vite build`.
+    - Optimized `vercel.json` with `cleanUrls: true` and SPA rewrites to prevent 404 errors on page refresh.
 - **Streak System**:
     - Added `streak` and `lastLoginDate` to the global state.
     - Implemented logic in `useStore` to update the streak automatically on app load.
