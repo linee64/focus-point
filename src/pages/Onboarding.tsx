@@ -157,9 +157,11 @@ const slides = [
 
 export const Onboarding = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [view, setView] = useState<'carousel' | 'register' | 'login' | 'name-input' | 'activity-input' | 'step-3' | 'daily-routine' | 'completion'>('carousel');
+  const [view, setView] = useState<'carousel' | 'register' | 'login' | 'verify-email' | 'name-input' | 'activity-input' | 'step-3' | 'daily-routine' | 'completion'>('carousel');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [showPasswordInput, setShowPasswordInput] = useState(false);
   const [isPasswordValid, setIsPasswordValid] = useState(false);
@@ -182,10 +184,6 @@ export const Onboarding = () => {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
-
-  // Name input specific states
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [schoolShift, setSchoolShift] = useState<'1' | '2' | null>(null);
   const [schoolStartTime, setSchoolStartTime] = useState('08:00');
   const [schoolEndTime, setSchoolEndTime] = useState('14:00');
@@ -282,18 +280,24 @@ export const Onboarding = () => {
   };
 
   const handleCreateAccount = async () => {
-    if (isEmailValid && isPasswordValid) {
+    if (isEmailValid && isPasswordValid && firstName && lastName) {
       setIsLoading(true);
       setAuthError(null);
       try {
         const { error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              first_name: firstName,
+              last_name: lastName,
+            }
+          }
         });
 
         if (error) throw error;
         
-        setView('name-input');
+        setView('verify-email');
       } catch (error: any) {
         setAuthError(error.message || 'Ошибка при регистрации');
         setShakeButton(true);
@@ -387,12 +391,18 @@ export const Onboarding = () => {
     setIsLoading(true);
     setLoginError(null);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: loginPassword,
       });
 
       if (error) throw error;
+      
+      // Sync user data from metadata if exists
+      if (data.user?.user_metadata) {
+        const meta = data.user.user_metadata;
+        updateUser(meta.first_name || '', meta.last_name || '');
+      }
       
       completeOnboarding();
     } catch (error: any) {
@@ -613,6 +623,29 @@ export const Onboarding = () => {
           </div>
 
           <div className="space-y-6">
+            <div className="flex gap-4">
+              <div className="space-y-2 flex-1">
+                <label className="text-sm text-gray-400 ml-1">Имя</label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Иван"
+                  className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              <div className="space-y-2 flex-1">
+                <label className="text-sm text-gray-400 ml-1">Фамилия</label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Иванов"
+                  className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2 relative">
               <label className="text-sm text-gray-400 ml-1">Email</label>
               <div className="relative">
@@ -648,8 +681,8 @@ export const Onboarding = () => {
                         <a href="#" className="text-primary hover:underline">Условиями использования</a>
                     </div>
                     <button
-                        onClick={() => isEmailValid && setShowPasswordInput(true)}
-                        disabled={!isEmailValid}
+                        onClick={() => isEmailValid && firstName && lastName && setShowPasswordInput(true)}
+                        disabled={!isEmailValid || !firstName || !lastName}
                         className="w-full bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-all text-lg"
                     >
                         Продолжить
@@ -730,6 +763,20 @@ export const Onboarding = () => {
                       'Создать аккаунт'
                     )}
                   </motion.button>
+
+                  <div className="relative flex items-center gap-4 py-2">
+                    <div className="flex-1 h-[1px] bg-white/10"></div>
+                    <span className="text-gray-500 text-sm">или</span>
+                    <div className="flex-1 h-[1px] bg-white/10"></div>
+                  </div>
+
+                  <button 
+                    onClick={handleGoogleLogin}
+                    className="w-full bg-white text-gray-700 font-semibold py-4 rounded-xl transition-colors hover:bg-gray-100 flex items-center justify-center gap-3 text-base"
+                  >
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" />
+                    Регистрация через Google
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -862,9 +909,64 @@ export const Onboarding = () => {
                             'Войти'
                           )}
                         </motion.button>
+
+                        <div className="relative flex items-center gap-4 py-2">
+                          <div className="flex-1 h-[1px] bg-white/10"></div>
+                          <span className="text-gray-500 text-sm">или</span>
+                          <div className="flex-1 h-[1px] bg-white/10"></div>
+                        </div>
+
+                        <button 
+                          onClick={handleGoogleLogin}
+                          className="w-full bg-white text-gray-700 font-semibold py-4 rounded-xl transition-colors hover:bg-gray-100 flex items-center justify-center gap-3 text-base"
+                        >
+                          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" />
+                          Войти через Google
+                        </button>
                     </motion.div>
                 )}
             </AnimatePresence>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+
+  const renderVerifyEmail = () => (
+    <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-y-auto custom-scrollbar">
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-black/80 z-10" />
+        <img 
+          src="https://i.pinimg.com/736x/0f/df/48/0fdf484ccf80ea3301e22e815866f44b.jpg" 
+          alt="Background" 
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full z-20 relative text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 space-y-6"
+        >
+          <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check size={40} className="text-primary" />
+          </div>
+          <h2 className="text-3xl font-bold text-white">Почти готово!</h2>
+          <p className="text-gray-300 leading-relaxed">
+            Мы отправили письмо для подтверждения на <span className="text-primary font-semibold">{email}</span>. 
+            Пожалуйста, перейдите по ссылке в письме, чтобы активировать свой аккаунт.
+          </p>
+          <div className="space-y-4 pt-4">
+            <button
+              onClick={() => setView('login')}
+              className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg"
+            >
+              Перейти к входу
+            </button>
+            <p className="text-xs text-gray-500">
+              Не получили письмо? Проверьте папку «Спам» или подождите несколько минут.
+            </p>
           </div>
         </motion.div>
       </div>
@@ -1489,6 +1591,7 @@ export const Onboarding = () => {
       {view === 'carousel' && renderCarousel()}
       {view === 'register' && renderRegister()}
       {view === 'login' && renderLogin()}
+      {view === 'verify-email' && renderVerifyEmail()}
       {view === 'name-input' && renderNameInput()}
       {view === 'activity-input' && renderActivityInput()}
       {view === 'step-3' && renderStep3()}

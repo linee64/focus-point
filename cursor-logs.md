@@ -95,6 +95,15 @@
     - Connected the feedback form in `Profile.tsx` to Supabase.
     - Created `handleSendFeedback` to insert feedback data into a Supabase `feedback` table.
     - Added loading and success states for the feedback submission button.
+- **Verification & Identity**:
+    - Added mandatory **Email Verification** screen after registration in `Onboarding.tsx`.
+    - Integrated name/surname collection *during* the registration process.
+    - User metadata (`first_name`, `last_name`) is now saved to Supabase during `signUp`.
+    - Fixed the "Guest" bug by synchronizing Supabase `user_metadata` with the Zustand store in `App.tsx` and `Onboarding.tsx`.
+    - Improved `logout` reliability by adding `try...catch` and pre-checking session to avoid `net::ERR_ABORTED` console errors.
+- **Google Authentication**:
+    - Added "Login/Register with Google" buttons to all authentication screens (`Login`, `Register`, `Carousel`).
+    - Implemented logic to extract `first_name` and `last_name` from Google's `full_name` metadata in `App.tsx`.
 - **Streak System**:
     - Added `streak` and `lastLoginDate` to the global state.
     - Implemented logic in `useStore` to update the streak automatically on app load.

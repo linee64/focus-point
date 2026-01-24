@@ -219,15 +219,25 @@ export const useStore = create<StoreState>()(
       }),
 
       logout: async () => {
-        await supabase.auth.signOut();
-        set({ 
-          hasOnboarded: false, 
-          user: null, 
-          tasks: [], 
-          schedule: [], 
-          notes: [], 
-          aiPlans: {} 
-        });
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            await supabase.auth.signOut();
+          }
+        } catch (error) {
+          console.warn('Supabase signOut error (likely aborted):', error);
+        } finally {
+          set({ 
+            hasOnboarded: false, 
+            user: null, 
+            tasks: [], 
+            schedule: [], 
+            notes: [], 
+            aiPlans: {},
+            streak: 0,
+            lastLoginDate: null
+          });
+        }
       },
     }),
     {

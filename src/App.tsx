@@ -23,7 +23,8 @@ function App() {
     setNotificationsOpen, 
     isAddTaskOpen, 
     setAddTaskOpen,
-    updateStreak 
+    updateStreak,
+    updateUser
   } = useStore();
 
   useEffect(() => {
@@ -33,12 +34,46 @@ function App() {
     // Check active sessions and subscribe to auth changes
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
+        // Sync user metadata if available
+        const meta = session.user?.user_metadata;
+        
+        // Handle both custom metadata and Google/OAuth metadata
+        let firstName = meta?.first_name || '';
+        let lastName = meta?.last_name || '';
+
+        // If it's a Google login, we might have full_name instead
+        if (!firstName && meta?.full_name) {
+          const parts = meta.full_name.split(' ');
+          firstName = parts[0];
+          lastName = parts.slice(1).join(' ');
+        }
+
+        if (firstName || lastName) {
+          updateUser(firstName, lastName);
+        }
         completeOnboarding();
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
+        // Sync user metadata if available
+        const meta = session.user?.user_metadata;
+        
+        // Handle both custom metadata and Google/OAuth metadata
+        let firstName = meta?.first_name || '';
+        let lastName = meta?.last_name || '';
+
+        // If it's a Google login, we might have full_name instead
+        if (!firstName && meta?.full_name) {
+          const parts = meta.full_name.split(' ');
+          firstName = parts[0];
+          lastName = parts.slice(1).join(' ');
+        }
+
+        if (firstName || lastName) {
+          updateUser(firstName, lastName);
+        }
         completeOnboarding();
       } else {
         // If no session, we don't necessarily logout from store 
