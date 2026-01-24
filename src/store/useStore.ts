@@ -40,6 +40,8 @@ interface StoreState {
   removeAIPlanItem: (date: string, itemId: string) => void;
   toggleAIPlanItem: (date: string, itemId: string) => void;
   updateStreak: () => void;
+  syncData: () => Promise<void>;
+  loadData: () => Promise<void>;
   logout: () => void;
 }
 
@@ -108,49 +110,82 @@ export const useStore = create<StoreState>()(
       setAddTaskOpen: (isOpen) => set({ isAddTaskOpen: isOpen }),
       setAddScheduleOpen: (isOpen) => set({ isAddScheduleOpen: isOpen }),
 
-      completeOnboarding: () => set({ hasOnboarded: true }),
+      completeOnboarding: () => {
+        set({ hasOnboarded: true });
+        useStore.getState().syncData();
+      },
 
       updateUser: (name, surname) => set({ user: { name, surname } }),
 
-      addScheduleEvent: (event) => set((state) => ({
-        schedule: [...state.schedule, { ...event, id: Math.random().toString(36).substr(2, 9) }]
-      })),
+      addScheduleEvent: (event) => {
+        set((state) => ({
+          schedule: [...state.schedule, { ...event, id: Math.random().toString(36).substr(2, 9) }]
+        }));
+        useStore.getState().syncData();
+      },
 
-      updateScheduleEvent: (id, updatedEvent) => set((state) => ({
-        schedule: state.schedule.map(e => e.id === id ? { ...e, ...updatedEvent } : e)
-      })),
+      updateScheduleEvent: (id, updatedEvent) => {
+        set((state) => ({
+          schedule: state.schedule.map(e => e.id === id ? { ...e, ...updatedEvent } : e)
+        }));
+        useStore.getState().syncData();
+      },
 
-      removeScheduleEvent: (id) => set((state) => ({
-        schedule: state.schedule.filter(e => e.id !== id)
-      })),
+      removeScheduleEvent: (id) => {
+        set((state) => ({
+          schedule: state.schedule.filter(e => e.id !== id)
+        }));
+        useStore.getState().syncData();
+      },
 
-      clearSchoolSchedule: () => set((state) => ({
-        schedule: state.schedule.filter(e => e.type !== 'school')
-      })),
+      clearSchoolSchedule: () => {
+        set((state) => ({
+          schedule: state.schedule.filter(e => e.type !== 'school')
+        }));
+        useStore.getState().syncData();
+      },
 
-      addTask: (task) => set((state) => ({
-        tasks: [...state.tasks, { ...task, id: Math.random().toString(36).substr(2, 9), isCompleted: false }]
-      })),
+      addTask: (task) => {
+        set((state) => ({
+          tasks: [...state.tasks, { ...task, id: Math.random().toString(36).substr(2, 9), isCompleted: false }]
+        }));
+        useStore.getState().syncData();
+      },
 
-      removeTask: (id) => set((state) => ({
-        tasks: state.tasks.filter(t => t.id !== id)
-      })),
+      removeTask: (id) => {
+        set((state) => ({
+          tasks: state.tasks.filter(t => t.id !== id)
+        }));
+        useStore.getState().syncData();
+      },
 
-      toggleTask: (id) => set((state) => ({
-        tasks: state.tasks.map(t => t.id === id ? { ...t, isCompleted: !t.isCompleted } : t)
-      })),
+      toggleTask: (id) => {
+        set((state) => ({
+          tasks: state.tasks.map(t => t.id === id ? { ...t, isCompleted: !t.isCompleted } : t)
+        }));
+        useStore.getState().syncData();
+      },
 
-      addNote: (note) => set((state) => ({
-        notes: [...state.notes, { ...note, id: Math.random().toString(36).substr(2, 9), createdAt: new Date().toISOString() }]
-      })),
+      addNote: (note) => {
+        set((state) => ({
+          notes: [...state.notes, { ...note, id: Math.random().toString(36).substr(2, 9), createdAt: new Date().toISOString() }]
+        }));
+        useStore.getState().syncData();
+      },
 
-      removeNote: (id) => set((state) => ({
-        notes: state.notes.filter(n => n.id !== id)
-      })),
+      removeNote: (id) => {
+        set((state) => ({
+          notes: state.notes.filter(n => n.id !== id)
+        }));
+        useStore.getState().syncData();
+      },
 
-      updateSettings: (newSettings) => set((state) => ({
-        settings: { ...state.settings, ...newSettings }
-      })),
+      updateSettings: (newSettings) => {
+        set((state) => ({
+          settings: { ...state.settings, ...newSettings }
+        }));
+        useStore.getState().syncData();
+      },
 
       setAIPlan: (date, plan) => set((state) => ({
         aiPlans: { ...state.aiPlans, [date]: plan }
@@ -198,25 +233,86 @@ export const useStore = create<StoreState>()(
         };
       }),
 
-      updateStreak: () => set((state) => {
-        const today = new Date();
-        const todayStr = format(today, 'yyyy-MM-dd');
+      updateStreak: () => {
+        set((state) => {
+          const today = new Date();
+          const todayStr = format(today, 'yyyy-MM-dd');
+          
+          if (!state.lastLoginDate) {
+            return { streak: 1, lastLoginDate: todayStr };
+          }
+
+          const lastLogin = parseISO(state.lastLoginDate);
+          const diff = differenceInDays(today, lastLogin);
+
+          if (diff === 0) {
+            return state; // Already logged in today
+          } else if (diff === 1) {
+            return { streak: state.streak + 1, lastLoginDate: todayStr }; // Consecutive day
+          } else {
+            return { streak: 1, lastLoginDate: todayStr }; // Streak broken
+          }
+        });
+        useStore.getState().syncData();
+      },
+
+      syncData: async () => {
+        const state = useStore.getState();
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (!state.lastLoginDate) {
-          return { streak: 1, lastLoginDate: todayStr };
-        }
+        if (!session?.user) return;
 
-        const lastLogin = parseISO(state.lastLoginDate);
-        const diff = differenceInDays(today, lastLogin);
+        try {
+          const { error } = await supabase
+            .from('profiles')
+            .upsert({
+              id: session.user.id,
+              settings: state.settings,
+              tasks: state.tasks,
+              schedule: state.schedule,
+              notes: state.notes,
+              ai_plans: state.aiPlans,
+              streak: state.streak,
+              last_login_date: state.lastLoginDate,
+              has_onboarded: state.hasOnboarded,
+              updated_at: new Date().toISOString(),
+            });
 
-        if (diff === 0) {
-          return state; // Already logged in today
-        } else if (diff === 1) {
-          return { streak: state.streak + 1, lastLoginDate: todayStr }; // Consecutive day
-        } else {
-          return { streak: 1, lastLoginDate: todayStr }; // Streak broken
+          if (error) throw error;
+        } catch (error) {
+          console.error('Error syncing data to Supabase:', error);
         }
-      }),
+      },
+
+      loadData: async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (error && error.code !== 'PGRST116') throw error;
+
+          if (data) {
+            set({
+              settings: data.settings || useStore.getState().settings,
+              tasks: data.tasks || [],
+              schedule: data.schedule || [],
+              notes: data.notes || [],
+              aiPlans: data.ai_plans || {},
+              streak: data.streak || 0,
+              lastLoginDate: data.last_login_date || null,
+              hasOnboarded: data.has_onboarded ?? useStore.getState().hasOnboarded,
+            });
+          }
+        } catch (error) {
+          console.error('Error loading data from Supabase:', error);
+        }
+      },
 
       logout: async () => {
         try {

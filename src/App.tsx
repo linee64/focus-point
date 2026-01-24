@@ -24,7 +24,8 @@ function App() {
     isAddTaskOpen, 
     setAddTaskOpen,
     updateStreak,
-    updateUser
+    updateUser,
+    loadData
   } = useStore();
 
   useEffect(() => {
@@ -32,8 +33,11 @@ function App() {
     updateStreak();
 
     // Check active sessions and subscribe to auth changes
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
+        // Load data from Supabase
+        await loadData();
+        
         // Sync user metadata if available
         const meta = session.user?.user_metadata;
         
@@ -51,12 +55,19 @@ function App() {
         if (firstName || lastName) {
           updateUser(firstName, lastName);
         }
-        completeOnboarding();
+        
+        // Only complete onboarding if the store says so (loaded from Supabase)
+        if (useStore.getState().hasOnboarded) {
+          completeOnboarding();
+        }
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
+        // Load data from Supabase
+        await loadData();
+
         // Sync user metadata if available
         const meta = session.user?.user_metadata;
         
@@ -74,7 +85,11 @@ function App() {
         if (firstName || lastName) {
           updateUser(firstName, lastName);
         }
-        completeOnboarding();
+
+        // Only complete onboarding if the store says so (loaded from Supabase)
+        if (useStore.getState().hasOnboarded) {
+          completeOnboarding();
+        }
       } else {
         // If no session, we don't necessarily logout from store 
         // because we might want to keep offline data, but for this app 

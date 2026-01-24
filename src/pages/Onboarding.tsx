@@ -216,6 +216,35 @@ export const Onboarding = () => {
   const addScheduleEvent = useStore((state) => state.addScheduleEvent);
   const updateSettings = useStore((state) => state.updateSettings);
 
+  useEffect(() => {
+    // Check if user is already logged in but hasn't finished onboarding
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // Load existing names from metadata if available
+        const meta = session.user?.user_metadata;
+        if (meta) {
+          if (meta.first_name) setFirstName(meta.first_name);
+          if (meta.last_name) setLastName(meta.last_name);
+          
+          if (!meta.first_name && meta.full_name) {
+            const parts = meta.full_name.split(' ');
+            setFirstName(parts[0]);
+            setLastName(parts.slice(1).join(' '));
+          }
+        }
+
+        // If we have a session, the user is verified or logged in.
+        // We should skip the login/register screens and go to the first setup step (name-input).
+        // This ensures they set their shift and commute time.
+        if (view === 'carousel' || view === 'login' || view === 'register' || view === 'verify-email') {
+          setView('name-input');
+        }
+      }
+    };
+    checkSession();
+  }, []);
+
   const getStepInfo = () => {
     switch (view) {
       case 'name-input': return { step: 1, total: 5 };
@@ -932,6 +961,18 @@ export const Onboarding = () => {
     </div>
   );
 
+  const handleVerifyContinue = async () => {
+    setIsLoading(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      setView('name-input');
+    } else {
+      setAuthError('Пожалуйста, сначала подтвердите ваш email, перейдя по ссылке в письме.');
+      setTimeout(() => setAuthError(null), 3000);
+    }
+    setIsLoading(false);
+  };
+
   const renderVerifyEmail = () => (
     <div className="flex-1 flex flex-col p-8 pt-12 relative overflow-y-auto custom-scrollbar">
       <div className="absolute inset-0 z-0">
@@ -958,11 +999,21 @@ export const Onboarding = () => {
             Пожалуйста, перейдите по ссылке в письме, чтобы активировать свой аккаунт.
           </p>
           <div className="space-y-4 pt-4">
+            {authError && (
+              <p className="text-red-400 text-sm mb-2">{authError}</p>
+            )}
+            <button
+              onClick={handleVerifyContinue}
+              disabled={isLoading}
+              className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg flex items-center justify-center gap-2"
+            >
+              {isLoading ? <Loader2 className="animate-spin" size={20} /> : 'Я подтвердил почту'}
+            </button>
             <button
               onClick={() => setView('login')}
-              className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl transition-all text-lg"
+              className="w-full bg-white/5 hover:bg-white/10 text-gray-400 py-2 rounded-xl transition-all text-sm"
             >
-              Перейти к входу
+              Вернуться ко входу
             </button>
             <p className="text-xs text-gray-500">
               Не получили письмо? Проверьте папку «Спам» или подождите несколько минут.

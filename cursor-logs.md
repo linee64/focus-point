@@ -107,6 +107,7 @@
 - **Vercel Deployment Fixes**:
     - Fixed `package.json` build script by changing it to standard `vite build`.
     - Optimized `vercel.json` with `cleanUrls: true` and SPA rewrites to prevent 404 errors on page refresh.
+    - Updated `index.html` title to **FocusPoint**.
 - **Streak System**:
     - Added `streak` and `lastLoginDate` to the global state.
     - Implemented logic in `useStore` to update the streak automatically on app load.
@@ -124,6 +125,22 @@
     - Fixed Gemini quota (429) issues by adding fallback model logic and user-friendly error messages.
     - Removed initial "0" from numeric input fields in Onboarding and DailyRoutineModal for better UX.
     - Removed duplicate activity lists from the Schedule page; now everything is unified in the AI plan.
+
+## 2026-01-25
+- **Облачная синхронизация**:
+    - Внедрена полноценная синхронизация настроек, задач, расписания и заметок через Supabase.
+    - Добавлены методы `syncData` и `loadData` в `useStore.ts` для взаимодействия с таблицей `profiles`.
+    - Все действия в хранилище (добавление задач, обновление настроек и т.д.) теперь автоматически синхронизируются с облаком.
+    - Исправлен баг, при котором настройки (например, время дороги `commuteTime`) не сохранялись при переходе между устройствами.
+    - `App.tsx` теперь автоматически загружает данные пользователя из Supabase при инициализации сессии.
+- **Инфраструктура базы данных**:
+    - Создан файл `supabase_setup.sql` с командами для создания таблиц `profiles` и `feedback`.
+    - Настроены политики безопасности (RLS), чтобы пользователи имели доступ только к своим данным.
+- **Улучшение процесса регистрации (Onboarding)**:
+    - Исправлен поток регистрации: теперь после подтверждения почты или входа через Google пользователь автоматически направляется на шаг ввода данных (смена, время дороги).
+    - В `Onboarding.tsx` добавлена логика предзаполнения имени и фамилии из метаданных пользователя (включая Google OAuth).
+    - Гарантировано сохранение всех промежуточных данных онбординга в Supabase за счет автоматических вызовов `syncData` при обновлении настроек.
+    - Экран верификации email теперь содержит кнопку "Я подтвердил почту", которая сразу ведет к заполнению профиля, минуя страницу входа.
 
 ## 2026-01-09
 - **UI Adjustments**:
