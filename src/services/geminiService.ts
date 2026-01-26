@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
-const BASE_URL = 'http://127.0.0.1:8001';
+const BASE_URL = 'http://192.168.11.71:8001';
 
 /**
  * Сервис для анализа видео через локальный бэкенд

@@ -41,7 +41,7 @@ export const Profile = () => {
   } = useStore();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [school, setSchool] = useState('');
-  const [grade, setGrade] = useState('');
+  const [grade, setGrade] = useState(settings.grade || '');
   const [isStudyOpen, setIsStudyOpen] = useState(false);
   const [isDailyRoutineOpen, setIsDailyRoutineOpen] = useState(false);
   const [feedback, setFeedback] = useState('');

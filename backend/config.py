@@ -20,7 +20,7 @@ WHISPER_DEVICE = "cpu"      # Можно поменять на "cuda", если 
 WHISPER_COMPUTE_TYPE = "float32" # float32 более стабилен на Windows CPU
 
 # Настройки сервера
-HOST = "127.0.0.1"
+HOST = "0.0.0.0"
 PORT = 8001
 
 # Настройки ИИ

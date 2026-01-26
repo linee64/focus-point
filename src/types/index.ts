@@ -39,6 +39,7 @@ export interface UserSettings {
     type: string;
   }[];
   group?: string; // User's study group
+  grade?: string; // User's school class/grade
 }
 
 export interface Note {

@@ -145,6 +145,7 @@
     - Создан файл `myApp/App.js` с использованием `react-native-webview` для отображения веб-версии приложения.
     - Настроен `app.json` и `package.json` для корректного запуска через Expo Go.
     - Добавлена обработка `SafeAreaView` и `StatusBar` для корректного отображения на iOS и Android.
+    - Настроена локальная работа через одну Wi-Fi сеть: фронтенд и бэкенд переведены на использование локального IP (`192.168.11.71`).
 
 ## 2026-01-09
 - **UI Adjustments**:
@@ -402,7 +403,22 @@
 - **Улучшение Профиля**:
     - Исправлено отображение имени и фамилии пользователя из стора.
     - Сделано переключение группы мгновенным (сохранение в стор при выборе).
-- **Фильтрация и Логика**:
+- Фильтрация и Логика:
     - В блоке статистики теперь учитываются только школьные уроки (`type: school`).
     - В основном списке расписания отображаются все типы событий для полноты картины дня.
     - Исправлена ошибка `localeCompare` при отсутствии времени у события.
+
+## 2026-01-26
+- **Registration Flow Update**:
+    - Removed mandatory **Email Verification** screen after registration in `Onboarding.tsx`.
+    - Restored the direct transition from registration to the 5-step onboarding process.
+    - Updated navigation to allow users to start onboarding immediately after account creation.
+    - Refined `handleBack` logic to ensure consistent navigation across all onboarding steps.
+    - Verified that the 5-step process (Name, Activities, Schedule, Daily Routine, Completion) is correctly displayed.
+- **Auth Fixes**:
+    - Implemented a temporary bypass for "Email rate limit exceeded" (429) errors during registration to allow uninterrupted UI testing of the onboarding flow.
+    - Added an email verification reminder to the final onboarding screen (`completion` view) to ensure users confirm their accounts.
+- **Onboarding Enhancements**:
+    - Added a mandatory "Class" (grade) input field to the first step of onboarding.
+    - Updated `UserSettings` type and store logic to persist the user's school class.
+    - Synchronized the profile page with the new grade setting.
