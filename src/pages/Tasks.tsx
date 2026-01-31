@@ -64,7 +64,7 @@ export const Tasks = () => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-6 pb-20"
+      className="space-y-6 pb-32"
     >
       {/* Header */}
       <header className="flex justify-between items-center pt-2 px-1">

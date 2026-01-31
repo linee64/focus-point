@@ -37,6 +37,7 @@ export interface UserSettings {
     startTime: string;
     endTime: string;
     type: string;
+    days?: number[]; // 0-6, where 0 is Sunday or 1-7 (let's use 1-7 for Mon-Sun as it's more common in RU)
   }[];
   group?: string; // User's study group
   grade?: string; // User's school class/grade

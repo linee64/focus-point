@@ -31,7 +31,7 @@ export const Layout = ({ children }: LayoutProps) => {
         
         <main className={clsx(
           "flex-1 relative z-10",
-          !isAIChat ? "overflow-y-auto p-4 pb-20 custom-scrollbar" : "overflow-hidden p-0"
+          !isAIChat ? "overflow-y-auto p-4 pb-32 custom-scrollbar" : "overflow-hidden p-0"
         )}>
           {children}
         </main>

@@ -3,19 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Clock, RefreshCw, Coffee, Zap, Moon, Pencil, Trash2, Check, X, BookOpen, Utensils, Bed } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { analyzeSchedule } from '../services/geminiService';
-import { PlanItem } from '../types';
+import { PlanItem, AIScheduleAnalysisProps } from '../types';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { clsx } from 'clsx';
-
-interface AIScheduleAnalysisProps {
-  selectedDate: Date;
-}
+import { TimePicker } from './TimePicker';
 
 export const AIScheduleAnalysis: React.FC<AIScheduleAnalysisProps> = ({ selectedDate }) => {
   const { 
     schedule, 
     settings, 
+    updateSettings,
     aiPlans, 
     setAIPlan, 
     updateAIPlanItem, 
@@ -26,7 +24,10 @@ export const AIScheduleAnalysis: React.FC<AIScheduleAnalysisProps> = ({ selected
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState('');
+  const [editTitle, setEditTitle] = useState('');
+  const [editStart, setEditStart] = useState('');
+  const [editEnd, setEditEnd] = useState('');
+  const [editDays, setEditDays] = useState<number[]>([]);
 
   const dateKey = format(selectedDate, 'yyyy-MM-dd');
   const currentPlan = aiPlans[dateKey];
@@ -42,7 +43,12 @@ export const AIScheduleAnalysis: React.FC<AIScheduleAnalysisProps> = ({ selected
         w: settings?.wakeUpTime,
         b: settings?.bedTime,
         c: settings?.commuteTime,
-        r: (settings?.routineActivities || []).map(a => ({ t: a.title, s: a.startTime, e: a.endTime }))
+        r: (settings?.routineActivities || []).map(a => ({ 
+          t: a.title, 
+          s: a.startTime, 
+          e: a.endTime,
+          d: a.days 
+        }))
       }
     });
   };
@@ -115,12 +121,46 @@ export const AIScheduleAnalysis: React.FC<AIScheduleAnalysisProps> = ({ selected
 
   const startEditing = (item: PlanItem) => {
     setEditingId(item.id);
-    setEditValue(item.title);
+    setEditTitle(item.title);
+    setEditStart(item.start);
+    setEditEnd(item.end);
+    
+    // Find if this is a routine activity to get its days
+    const routine = settings.routineActivities.find(a => a.title === item.title);
+    setEditDays(routine?.days || []);
   };
 
   const saveEdit = (id: string) => {
-    updateAIPlanItem(dateKey, id, { title: editValue });
+    updateAIPlanItem(dateKey, id, { 
+      title: editTitle,
+      start: editStart,
+      end: editEnd
+    });
+
+    // If days are selected, update routine activities
+    if (editDays.length > 0) {
+      const otherRoutines = settings.routineActivities.filter(a => a.title !== editTitle);
+      updateSettings({
+        routineActivities: [
+          ...otherRoutines,
+          {
+            title: editTitle,
+            startTime: editStart,
+            endTime: editEnd,
+            type: 'activity',
+            days: editDays
+          }
+        ]
+      });
+    }
+
     setEditingId(null);
+  };
+
+  const toggleDay = (day: number) => {
+    setEditDays(prev => 
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day].sort()
+    );
   };
 
   const getItemIcon = (type: string) => {
@@ -272,20 +312,74 @@ export const AIScheduleAnalysis: React.FC<AIScheduleAnalysisProps> = ({ selected
                         </div>
 
                         {editingId === item.id ? (
-                          <div className="flex items-center gap-2">
-                            <input
-                              autoFocus
-                              value={editValue}
-                              onChange={(e) => setEditValue(e.target.value)}
-                              onKeyDown={(e) => e.key === 'Enter' && saveEdit(item.id)}
-                              className="flex-1 bg-white/5 border border-purple-500/50 rounded-lg px-2 py-1 text-sm text-white focus:outline-none"
-                            />
-                            <button onClick={() => saveEdit(item.id)} className="p-1 text-green-400 hover:bg-green-400/10 rounded">
-                              <Check size={16} />
-                            </button>
-                            <button onClick={() => setEditingId(null)} className="p-1 text-red-400 hover:bg-red-400/10 rounded">
-                              <X size={16} />
-                            </button>
+                          <div className="space-y-4 w-full">
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Название</label>
+                              <input
+                                autoFocus
+                                value={editTitle}
+                                onChange={(e) => setEditTitle(e.target.value)}
+                                className="w-full bg-white/5 border border-purple-500/50 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none shadow-[0_0_15px_rgba(168,85,247,0.1)]"
+                                placeholder="Название активности"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                              <TimePicker 
+                                label="Начало"
+                                value={editStart}
+                                onChange={setEditStart}
+                              />
+                              <TimePicker 
+                                label="Конец"
+                                value={editEnd}
+                                onChange={setEditEnd}
+                              />
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Повторять по дням</label>
+                              <div className="flex justify-between gap-1">
+                                {[
+                                  { id: 1, label: 'Пн' },
+                                  { id: 2, label: 'Вт' },
+                                  { id: 3, label: 'Ср' },
+                                  { id: 4, label: 'Чт' },
+                                  { id: 5, label: 'Пт' },
+                                  { id: 6, label: 'Сб' },
+                                  { id: 7, label: 'Вс' }
+                                ].map((day) => (
+                                  <button
+                                    key={day.id}
+                                    onClick={() => toggleDay(day.id)}
+                                    className={clsx(
+                                      "flex-1 py-2 rounded-lg text-[10px] font-bold transition-all border",
+                                      editDays.includes(day.id)
+                                        ? "bg-purple-500 border-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.3)]"
+                                        : "bg-white/5 border-white/5 text-gray-500 hover:bg-white/10"
+                                    )}
+                                  >
+                                    {day.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="flex gap-2 pt-2">
+                              <button 
+                                onClick={() => saveEdit(item.id)} 
+                                className="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2"
+                              >
+                                <Check size={14} />
+                                Сохранить
+                              </button>
+                              <button 
+                                onClick={() => setEditingId(null)} 
+                                className="px-4 bg-white/5 hover:bg-white/10 text-gray-400 font-bold py-2.5 rounded-xl text-xs transition-all"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
                           </div>
                         ) : (
                           <p className={clsx(

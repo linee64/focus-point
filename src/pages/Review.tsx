@@ -37,7 +37,7 @@ export const Review = () => {
   const videoId = getYoutubeId(videoUrl);
 
   return (
-    <div className="space-y-6 pb-20 relative">
+    <div className="space-y-6 pb-32 relative">
       {/* Header */}
       <header className="flex justify-between items-center pt-2 px-1">
         <div className="flex gap-3 items-center">

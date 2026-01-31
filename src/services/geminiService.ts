@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
-const BASE_URL = 'http://192.168.11.71:8001';
+const BASE_URL = `http://${window.location.hostname}:8001`;
 
 /**
  * Сервис для анализа видео через локальный бэкенд
@@ -144,9 +144,18 @@ export const analyzeSchedule = async (date: string, schedule: any[], settings: a
       : `- Школа: ${settings.schoolStart} - ${settings.schoolEnd} (обязательно включи время в пути по ${settings.commuteTime} мин до и после)`}
 
     Мои постоянные активности (шаблон):
-    ${(settings?.routineActivities || []).length > 0 
-      ? settings.routineActivities.map((a: any) => `- ${a.startTime} - ${a.endTime}: ${a.title}`).join('\n')
-      : 'Нет дополнительных постоянных активностей'}
+    ${(() => {
+      const dayNum = dateObj.getDay(); // 0-6, 0 is Sunday
+      const ruDayNum = dayNum === 0 ? 7 : dayNum; // Convert to 1-7 (Mon-Sun)
+      
+      const relevantRoutines = (settings?.routineActivities || []).filter((a: any) => 
+        !a.days || a.days.length === 0 || a.days.includes(ruDayNum)
+      );
+      
+      return relevantRoutines.length > 0 
+        ? relevantRoutines.map((a: any) => `- ${a.startTime} - ${a.endTime}: ${a.title}`).join('\n')
+        : 'Нет дополнительных постоянных активностей на этот день';
+    })()}
 
     Мои специфические активности на этот конкретный день (из расписания):
     ${(schedule || []).length > 0 ? schedule.map(e => `- ${e.startTime} - ${e.endTime}: ${e.title} (${e.type})`).join('\n') : 'Нет специфических активностей'}
@@ -154,7 +163,11 @@ export const analyzeSchedule = async (date: string, schedule: any[], settings: a
     Твоя задача:
     1. Составь последовательный план дня с момента подъема до отбоя.
     2. Используй ШАБЛОН выше (подъем, еда, отбой) как незыблемую основу. Они ДОЛЖНЫ быть в плане каждый день, включая выходные.
-    3. ${isWeekend 
+    3. ОБЯЗАТЕЛЬНО ВЫДЕЛИ МИНИМУМ 2 ЧАСА В ДЕНЬ НА ДОМАШНЮЮ РАБОТУ (Homework). 
+       - Разбей это время на 2 отдельных блока по 1 часу каждый.
+       - Распредели эти блоки гармонично в течение дня (например, один днем после школы/обеда, другой вечером перед ужином), чтобы не перегружать меня.
+       - Используй type: "productivity" и title: "Домашняя работа" для этих блоков.
+    4. ${isWeekend 
         ? "В плане НЕ ДОЛЖНО быть школы и времени в пути. Заполни это время отдыхом или полезными делами." 
         : 'ОБЯЗАТЕЛЬНО объедини все школьные уроки в один блок "Школа" с общим временем начала и конца. Включи время в пути.'}
     4. ВКЛЮЧИ в план все мои постоянные и специфические активности.

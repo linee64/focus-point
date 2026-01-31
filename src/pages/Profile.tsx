@@ -160,7 +160,7 @@ export const Profile = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6 pb-20"
+      className="space-y-6 pb-32"
     >
       <DailyRoutineModal 
         isOpen={isDailyRoutineOpen} 
@@ -546,7 +546,7 @@ export const Profile = () => {
       {/* Logout */}
       <button 
         onClick={logout}
-        className="w-full p-4 rounded-2xl bg-[#18181B]/50 backdrop-blur-md border border-white/10 flex items-center justify-center gap-2 text-red-500 hover:bg-red-500/10 transition-colors"
+        className="w-full p-4 rounded-2xl bg-[#18181B]/50 backdrop-blur-md border border-white/10 flex items-center justify-center gap-2 text-red-500 hover:bg-red-500/20 active:scale-[0.98] transition-all"
       >
         <LogOut className="w-5 h-5" />
         <span className="font-medium">Выйти</span>

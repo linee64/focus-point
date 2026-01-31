@@ -147,8 +147,18 @@
     - Добавлена обработка `SafeAreaView` и `StatusBar` для корректного отображения на iOS и Android.
     - Настроена локальная работа через одну Wi-Fi сеть: фронтенд и бэкенд переведены на использование локального IP (`192.168.11.71`).
 
-## 2026-01-09
-- **UI Adjustments**:
+## 2026-01-30
+- **Fixed AI Backend Connection**: Replaced hardcoded IP address in `geminiService.ts` with dynamic `window.location.hostname` to fix `net::ERR_CONNECTION_TIMED_OUT` when accessing the AI backend from different network environments.
+- **Enhanced AI Plan Editing**: 
+    - Updated `UserSettings` interface to support optional `days` (days of the week) for routine activities.
+    - Redesigned the "Edit" (pencil) button functionality in `AIScheduleAnalysis.tsx`:
+        - Replaced simple title-only editing with a comprehensive form.
+        - Integrated `TimePicker` for modifying activity start and end times.
+        - Added day selection (Mon-Sun) to allow users to set activities as recurring.
+        - Implemented automatic synchronization: editing an activity and selecting days now updates the user's "Routine Activities" in settings.
+    - Updated Gemini AI prompt in `geminiService.ts` to filter routine activities by the current day, ensuring the generated plan only includes relevant recurring tasks.
+    - Cleaned up `AIScheduleAnalysis.tsx` imports and types for better maintainability.
+
     - Changed School icon color to gray in `Profile.tsx`.
     - Added hidden file input to `Review.tsx`'s "Загрузить видео" button for device file selection.
 - **Gemini Integration**:
@@ -422,3 +432,7 @@
     - Added a mandatory "Class" (grade) input field to the first step of onboarding.
     - Updated `UserSettings` type and store logic to persist the user's school class.
     - Synchronized the profile page with the new grade setting.
+- **Mobile UI Fixes**:
+    - Fixed an issue where the "Logout" button on the Profile page was not clickable on mobile devices. This was caused by the bottom navigation bar overlapping the button due to insufficient padding and safe-area considerations.
+    - Increased bottom padding (`pb-32`) across all main pages ([Profile.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/Profile.tsx), [Schedule.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/Schedule.tsx), [Tasks.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/Tasks.tsx), [Review.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/Review.tsx)) and the global [Layout.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/components/Layout.tsx).
+    - Added haptic-like visual feedback (`active:scale-[0.98]`) to the Logout button for a better mobile experience.
