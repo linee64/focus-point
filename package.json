@@ -18,7 +18,6 @@
     "@tailwindcss/typography": "^0.5.19",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "expo": "^54.0.32",
     "framer-motion": "^12.23.26",
     "katex": "^0.16.27",
     "lucide-react": "^0.562.0",
