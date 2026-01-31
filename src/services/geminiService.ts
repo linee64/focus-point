@@ -1,7 +1,31 @@
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const BASE_URL = `http://${window.location.hostname}:8001`;
+const isVercel = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+const BASE_URL = isVercel ? '' : `http://${window.location.hostname}:8001`;
+
+// Инициализация Gemini API для прямого доступа (используется если бэкенд недоступен)
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+if (!API_KEY && isVercel) {
+  console.error("КРИТИЧЕСКАЯ ОШИБКА: VITE_GEMINI_API_KEY не найден в переменных окружения Vercel!");
+}
+const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
+
+// Хелпер для конвертации файла в формат Gemini
+async function fileToGenerativePart(file: File): Promise<{ inlineData: { data: string; mimeType: string } }> {
+  const base64EncodedDataPromise = new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+    reader.readAsDataURL(file);
+  });
+  return {
+    inlineData: {
+      data: await base64EncodedDataPromise,
+      mimeType: file.type,
+    },
+  };
+}
 
 /**
  * Сервис для анализа видео через локальный бэкенд
@@ -14,6 +38,11 @@ export const analyzeVideo = async (videoSource: string | File, isUrl: boolean = 
     const title = (videoSource as File).name;
     const summary = `# 📁 Конспект файла: ${title}\n\n## 🎯 Анализ загруженного видео завершен.\n\n*(В этой версии анализ локальных файлов работает в режиме демонстрации)*`;
     return { summary, title };
+  }
+
+  // Если мы на Vercel, обработка видео (транскрибация) через этот метод недоступна без бэкенда
+  if (isVercel) {
+    throw new Error("Анализ видео временно недоступен на Vercel (требуется Python-сервер для транскрибации).");
   }
 
   try {
@@ -42,7 +71,7 @@ export const analyzeVideo = async (videoSource: string | File, isUrl: boolean = 
     console.error("Error in analyzeVideo:", error);
     
     if (error.message?.includes("Failed to fetch")) {
-      throw new Error(`Не удалось подключиться к серверу. Убедитесь, что бэкенд запущен (python -m uvicorn backend.main:app --port 8001)`);
+      throw new Error(`Не удалось подключиться к серверу для обработки видео. На Vercel эта функция требует запущенного бэкенда или использования YouTube URL (если настроено).`);
     }
     
     throw new Error(error.message || "Произошла ошибка при обработке видео на сервере.");
@@ -50,6 +79,29 @@ export const analyzeVideo = async (videoSource: string | File, isUrl: boolean = 
 };
 
 export const chatWithAI = async (message: string, history: any[] = []) => {
+  // Пытаемся вызвать Gemini напрямую, если есть API ключ (для Vercel)
+  if (genAI) {
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const chat = model.startChat({
+        history: history.length > 0 ? history : [],
+      });
+      const result = await chat.sendMessage(message);
+      return result.response.text();
+    } catch (directError: any) {
+      console.warn("Direct Gemini API call failed, falling back to backend:", directError);
+      // Если ошибка в ключе или лимитах, пробрасываем её
+      if (directError.message?.includes("API_KEY_INVALID") || directError.message?.includes("quota")) {
+        throw directError;
+      }
+    }
+  }
+
+  // Если мы на Vercel и нет ключа, даже не пытаемся стучаться на localhost
+  if (isVercel && !genAI) {
+    throw new Error("ИИ недоступен: Добавьте VITE_GEMINI_API_KEY в настройки Vercel.");
+  }
+
   try {
     const response = await fetch(`${BASE_URL}/chat`, {
       method: 'POST',
@@ -68,6 +120,9 @@ export const chatWithAI = async (message: string, history: any[] = []) => {
     return data.response;
   } catch (error: any) {
     console.error("Error in chatWithAI:", error);
+    if (error.message?.includes("Failed to fetch")) {
+      throw new Error("Не удалось подключиться к ИИ. Убедитесь, что бэкенд запущен или добавлен VITE_GEMINI_API_KEY.");
+    }
     throw new Error(error.message || "Не удалось получить ответ от ИИ.");
   }
 };
@@ -76,6 +131,44 @@ export const chatWithAI = async (message: string, history: any[] = []) => {
  * Распознает расписание по изображению через бэкенд
  */
 export const recognizeScheduleFromImage = async (imageFile: File, group: string = ""): Promise<PlanItem[]> => {
+  // Пытаемся использовать прямой API Gemini если есть ключ
+  if (genAI) {
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const imageData = await fileToGenerativePart(imageFile);
+      
+      const group_focus = group.includes("2") 
+        ? "ВНИМАНИЕ: Пользователь из 2 ГРУППЫ. Игнорируй левую колонку, бери данные ТОЛЬКО из ПРАВОЙ колонки."
+        : "ВНИМАНИЕ: Пользователь из 1 ГРУППЫ. Бери данные ТОЛЬКО из ЛЕВОЙ колонки.";
+
+      const prompt = `
+        Проанализируй это изображение расписания. Группа: ${group}.
+        ${group_focus}
+        Извлеки предметы (title), время (start, end), кабинет (room) и день недели (day).
+        Верни ТОЛЬКО массив JSON в формате:
+        [{"title": "...", "start": "HH:mm", "end": "HH:mm", "room": "...", "day": "понедельник"}]
+      `;
+
+      const result = await model.generateContent([prompt, imageData]);
+      const response = result.response.text();
+      const cleanJson = response.replace(/```json/g, '').replace(/```/g, '').trim();
+      const schedule = JSON.parse(cleanJson);
+      
+      return schedule.map((item: any) => ({
+        ...item,
+        type: 'school',
+        isRecommendation: false
+      }));
+    } catch (directError) {
+      console.warn("Direct Gemini vision API call failed, falling back to backend:", directError);
+    }
+  }
+
+  // Если мы на Vercel и нет ключа, даже не пытаемся стучаться на localhost
+  if (isVercel && !genAI) {
+    throw new Error("Распознавание недоступно: Добавьте VITE_GEMINI_API_KEY в настройки Vercel.");
+  }
+
   const formData = new FormData();
   formData.append('file', imageFile);
   formData.append('group', group);
@@ -103,6 +196,9 @@ export const recognizeScheduleFromImage = async (imageFile: File, group: string 
     }));
   } catch (error: any) {
     console.error("Error in recognizeScheduleFromImage:", error);
+    if (error.message?.includes("Failed to fetch")) {
+      throw new Error("Не удалось подключиться к серверу распознавания. Добавьте VITE_GEMINI_API_KEY для прямой работы без бэкенда.");
+    }
     throw new Error(error.message || "Не удалось распознать расписание.");
   }
 };
