@@ -98,33 +98,12 @@
 - **Verification & Identity**:
     - Added mandatory **Email Verification** screen after registration in `Onboarding.tsx`.
     - Integrated name/surname collection *during* the registration process.
-    - User metadata (`first_name`, `last_name`) is now saved to Supabase during `signUp`.
-    - Fixed the "Guest" bug by synchronizing Supabase `user_metadata` with the Zustand store in `App.tsx` and `Onboarding.tsx`.
-    - Improved `logout` reliability by adding `try...catch` and pre-checking session to avoid `net::ERR_ABORTED` console errors.
-- **Google Authentication**:
-    - Added "Login/Register with Google" buttons to all authentication screens (`Login`, `Register`, `Carousel`).
-    - Implemented logic to extract `first_name` and `last_name` from Google's `full_name` metadata in `App.tsx`.
-- **Vercel Deployment Fixes**:
-    - Fixed `package.json` build script by changing it to standard `vite build`.
-    - Optimized `vercel.json` with `cleanUrls: true` and SPA rewrites to prevent 404 errors on page refresh.
-    - Updated `index.html` title to **FocusPoint**.
-- **Streak System**:
-    - Added `streak` and `lastLoginDate` to the global state.
-    - Implemented logic in `useStore` to update the streak automatically on app load.
-    - If a user skips a day, the streak resets to 1. If they log in consecutively, it increments.
-    - Updated `Profile.tsx` to display the real streak value with proper Russian pluralization.
-    - Added `commuteTime` field to `UserSettings` and Onboarding.
-    - Modified the Gemini prompt to automatically include commute time (e.g., "Дорога в школу") before and after school sessions.
-- **Recurring Routine Templates**:
-    - Added `routineActivities` to `UserSettings` to store permanent activities (Sleep, Breakfast, etc.).
-    - Updated Onboarding to save initial activities as routine templates.
-    - AI now prioritizes these templates when generating daily plans.
-- **Bug Fixes**:
-    - Resolved JSON parsing errors from Gemini by adding response cleaning and trailing comma removal.
-    - Unified backend communication to port 8001.
-    - Fixed Gemini quota (429) issues by adding fallback model logic and user-friendly error messages.
-    - Removed initial "0" from numeric input fields in Onboarding and DailyRoutineModal for better UX.
-    - Removed duplicate activity lists from the Schedule page; now everything is unified in the AI plan.
+
+## 2026-01-31
+- **Vercel Build Fix**:
+    - Identified "Permission denied" error during build on Vercel caused by `node_modules` and `dist` being tracked in git (committed from Windows).
+    - Removed `node_modules` and `dist` from git tracking using `git rm -r --cached`.
+    - Verified `.gitignore` correctly excludes these directories to prevent future tracking.
 
 ## 2026-01-25
 - **Облачная синхронизация**:
