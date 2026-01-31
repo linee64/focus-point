@@ -104,6 +104,9 @@
 - **Serverless Architecture (Vercel)**:
     - Created `/api/analyzeSchedule.js` serverless function to securely handle Gemini API calls on the backend side of Vercel.
     - Updated `geminiService.ts` to route AI requests through the new serverless endpoint when running on Vercel, improving security and reliability.
+- **Model Upgrade**:
+    - Upgraded Gemini model from `gemini-1.5-flash` to `gemini-2.5-flash` across the frontend and serverless functions for better performance and latest features.
+
 
 
 

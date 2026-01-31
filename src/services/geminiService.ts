@@ -106,7 +106,7 @@ export const chatWithAI = async (message: string, history: any[] = []) => {
   // Пытаемся вызвать Gemini напрямую локально (если есть ключ)
   if (genAI && !isVercel) {
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
       const chat = model.startChat({
         history: history.length > 0 ? history : [],
       });
@@ -150,7 +150,7 @@ export const recognizeScheduleFromImage = async (imageFile: File, group: string 
   // Пытаемся использовать прямой API Gemini если есть ключ
   if (genAI) {
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
       const imageData = await fileToGenerativePart(imageFile);
       
       const group_focus = group.includes("2") 
