@@ -98,6 +98,14 @@
 - **Verification & Identity**:
     - Added mandatory **Email Verification** screen after registration in `Onboarding.tsx`.
     - Integrated name/surname collection *during* the registration process.
+- **Environment Configuration**:
+    - Configured `VITE_GEMINI_API_KEY` in local `.env` and deployment settings for direct Gemini API access from frontend.
+    - Verified Supabase credentials integration.
+- **Serverless Architecture (Vercel)**:
+    - Created `/api/analyzeSchedule.js` serverless function to securely handle Gemini API calls on the backend side of Vercel.
+    - Updated `geminiService.ts` to route AI requests through the new serverless endpoint when running on Vercel, improving security and reliability.
+
+
 
 ## 2026-01-31
 - **Vercel Build Fix**:
@@ -108,6 +116,12 @@
     - Removed `extends: expo/tsconfig.base` from `tsconfig.json` which was causing build failures.
     - Deleted `.expo` and `myApp` directories as the mobile app part is no longer required.
     - Verified project build locally.
+- **Vercel AI Support (Direct Gemini SDK)**:
+    - Added `@google/generative-ai` SDK support in `geminiService.ts` to fix "Failed to fetch" errors on Vercel.
+    - Implemented fallback logic: the app now tries to call Gemini API directly from the frontend if `VITE_GEMINI_API_KEY` is provided.
+    - Updated `chatWithAI` and `analyzeSchedule` to work without a Python backend when deployed to Vercel.
+    - Added direct image recognition support for schedule uploads as a fallback for the backend.
+    - Updated error messages to guide users on adding API keys to Vercel environment variables.
 
 ## 2026-01-25
 - **Облачная синхронизация**:

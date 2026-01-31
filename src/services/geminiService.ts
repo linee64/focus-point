@@ -79,8 +79,32 @@ export const analyzeVideo = async (videoSource: string | File, isUrl: boolean = 
 };
 
 export const chatWithAI = async (message: string, history: any[] = []) => {
-  // Пытаемся вызвать Gemini напрямую, если есть API ключ (для Vercel)
-  if (genAI) {
+  // Пытаемся вызвать через серверлесс-функцию Vercel (безопаснее)
+  if (isVercel) {
+    try {
+      const response = await fetch("/api/analyzeSchedule", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: message }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Ошибка API");
+      }
+
+      const data = await response.json();
+      return data.result;
+    } catch (error: any) {
+      console.error("Vercel API Error:", error);
+      throw new Error(`Ошибка ИИ через Vercel: ${error.message}`);
+    }
+  }
+
+  // Пытаемся вызвать Gemini напрямую локально (если есть ключ)
+  if (genAI && !isVercel) {
     try {
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const chat = model.startChat({
@@ -89,24 +113,11 @@ export const chatWithAI = async (message: string, history: any[] = []) => {
       const result = await chat.sendMessage(message);
       return result.response.text();
     } catch (directError: any) {
-      console.warn("Direct Gemini API call failed, falling back to backend:", directError);
-      // Если ошибка в ключе или лимитах, пробрасываем её
-      if (directError.message?.includes("API_KEY_INVALID") || directError.message?.includes("quota")) {
-        throw directError;
-      }
+      console.warn("Direct Gemini API call failed:", directError);
     }
   }
 
-  // Если мы на Vercel и нет ключа, даже не пытаемся стучаться на бэкенд
-  if (isVercel && !genAI) {
-    throw new Error("ИИ недоступен: Добавьте VITE_GEMINI_API_KEY в настройки Vercel.");
-  }
-
-  // Если мы на Vercel, бэкенд (localhost) недоступен
-  if (isVercel) {
-    throw new Error("Бэкенд недоступен на Vercel. Используйте API ключ Gemini.");
-  }
-
+  // Если мы локально и нет ключа/ошибка, стучимся на локальный бэкенд
   try {
     const response = await fetch(`${BASE_URL}/chat`, {
       method: 'POST',
@@ -164,8 +175,18 @@ export const recognizeScheduleFromImage = async (imageFile: File, group: string 
         type: 'school',
         isRecommendation: false
       }));
-    } catch (directError) {
-      console.warn("Direct Gemini vision API call failed, falling back to backend:", directError);
+    } catch (directError: any) {
+      console.warn("Direct Gemini vision API call failed:", directError);
+      
+      if (isVercel) {
+        if (directError.message?.includes("API_KEY_INVALID")) {
+          throw new Error("Ошибка Gemini Vision API: Неверный API ключ. Проверьте настройки в Vercel.");
+        }
+        if (directError.message?.includes("quota")) {
+          throw new Error("Ошибка Gemini Vision API: Превышена квота (лимит запросов).");
+        }
+        throw new Error(`Ошибка Gemini Vision API: ${directError.message || "Неизвестная ошибка при анализе изображения"}`);
+      }
     }
   }
 
@@ -176,7 +197,7 @@ export const recognizeScheduleFromImage = async (imageFile: File, group: string 
 
   // Если мы на Vercel, бэкенд (localhost) недоступен
   if (isVercel) {
-    throw new Error("Бэкенд недоступен на Vercel. Используйте API ключ Gemini.");
+    throw new Error("Критическая ошибка: Прямой вызов Gemini Vision не удался, а бэкенд недоступен на Vercel.");
   }
 
   const formData = new FormData();
