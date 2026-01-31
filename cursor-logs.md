@@ -101,9 +101,13 @@
 
 ## 2026-01-31
 - **Vercel Build Fix**:
-    - Identified "Permission denied" error during build on Vercel caused by `node_modules` and `dist` being tracked in git (committed from Windows).
+    - Identified "Permission denied" error during build on Vercel caused by `node_modules` and `dist` being tracked in git.
     - Removed `node_modules` and `dist` from git tracking using `git rm -r --cached`.
-    - Verified `.gitignore` correctly excludes these directories to prevent future tracking.
+- **Cleanup and Expo Removal**:
+    - Removed Expo dependencies from `package.json`.
+    - Removed `extends: expo/tsconfig.base` from `tsconfig.json` which was causing build failures.
+    - Deleted `.expo` and `myApp` directories as the mobile app part is no longer required.
+    - Verified project build locally.
 
 ## 2026-01-25
 - **Облачная синхронизация**:
