@@ -97,9 +97,14 @@ export const chatWithAI = async (message: string, history: any[] = []) => {
     }
   }
 
-  // Если мы на Vercel и нет ключа, даже не пытаемся стучаться на localhost
+  // Если мы на Vercel и нет ключа, даже не пытаемся стучаться на бэкенд
   if (isVercel && !genAI) {
     throw new Error("ИИ недоступен: Добавьте VITE_GEMINI_API_KEY в настройки Vercel.");
+  }
+
+  // Если мы на Vercel, бэкенд (localhost) недоступен
+  if (isVercel) {
+    throw new Error("Бэкенд недоступен на Vercel. Используйте API ключ Gemini.");
   }
 
   try {
@@ -164,9 +169,14 @@ export const recognizeScheduleFromImage = async (imageFile: File, group: string 
     }
   }
 
-  // Если мы на Vercel и нет ключа, даже не пытаемся стучаться на localhost
+  // Если мы на Vercel и нет ключа, даже не пытаемся стучаться на бэкенд
   if (isVercel && !genAI) {
     throw new Error("Распознавание недоступно: Добавьте VITE_GEMINI_API_KEY в настройки Vercel.");
+  }
+
+  // Если мы на Vercel, бэкенд (localhost) недоступен
+  if (isVercel) {
+    throw new Error("Бэкенд недоступен на Vercel. Используйте API ключ Gemini.");
   }
 
   const formData = new FormData();
