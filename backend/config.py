@@ -21,7 +21,7 @@ WHISPER_COMPUTE_TYPE = "float32" # float32 более стабилен на Wind
 
 # Настройки сервера
 HOST = "0.0.0.0"
-PORT = 8001
+PORT = int(os.getenv("PORT", 8001))
 
 # Настройки ИИ
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")

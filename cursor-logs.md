@@ -98,6 +98,14 @@
 - **Verification & Identity**:
     - Added mandatory **Email Verification** screen after registration in `Onboarding.tsx`.
     - Integrated name/surname collection *during* the registration process.
+
+## 2026-02-02
+- **Backend Deployment Preparation (Railway)**:
+    - Updated [config.py](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/backend/config.py) to use the `PORT` environment variable for deployment.
+    - Added `google-generativeai` to [requirements.txt](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/backend/requirements.txt) in the backend folder.
+    - Created [Procfile](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/Procfile) in the root directory for Railway process management.
+    - Created [requirements.txt](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/requirements.txt) in the root directory to ensure Railway detects the Python environment and installs dependencies correctly.
+
 - **Environment Configuration**:
     - Configured `VITE_GEMINI_API_KEY` in local `.env` and deployment settings for direct Gemini API access from frontend.
     - Verified Supabase credentials integration.
