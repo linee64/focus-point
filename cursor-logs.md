@@ -105,6 +105,12 @@
     - Added `google-generativeai` to [requirements.txt](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/backend/requirements.txt) in the backend folder.
     - Created [Procfile](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/Procfile) in the root directory for Railway process management.
     - Created [requirements.txt](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/requirements.txt) in the root directory to ensure Railway detects the Python environment and installs dependencies correctly.
+- **Fixing Railway Deployment Crash**:
+    - Added [nixpacks.toml](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/nixpacks.toml) to install critical system dependencies: `ffmpeg` (for video processing), `cmake` and `gcc` (for building `pywhispercpp`).
+    - Added `python-multipart` to [requirements.txt](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/requirements.txt) (missing dependency for file uploads in FastAPI).
+    - Updated `uvicorn` to `uvicorn[standard]` for better performance and stability on Linux.
+    - Modified [Procfile](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/Procfile) to use `python -m uvicorn` for better module resolution.
+    - Optimized [main.py](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/backend/main.py) to skip Windows-specific OpenMP fixes when running on Linux.
 
 - **Environment Configuration**:
     - Configured `VITE_GEMINI_API_KEY` in local `.env` and deployment settings for direct Gemini API access from frontend.

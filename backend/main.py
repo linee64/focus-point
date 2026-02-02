@@ -2,7 +2,8 @@ import sys
 import os
 
 # Решение проблемы WinError 1114 и дублирования библиотек
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+if os.name == 'nt':
+    os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
