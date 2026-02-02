@@ -112,6 +112,8 @@
     - Modified [Procfile](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/Procfile) to use `python -m uvicorn` for better module resolution.
     - Optimized [main.py](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/backend/main.py) to skip Windows-specific OpenMP fixes when running on Linux.
 
+- **UI Updates**:
+    - Added informational text "Демо-режим: до 10-15 минут" below the YouTube link input field in [Review.tsx](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/pages/Review.tsx) to inform users about current limitations.
 - **Frontend Integration with Railway**:
     - Updated `BASE_URL` in [geminiService.ts](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/services/geminiService.ts) to point to the Railway backend: `https://focus-point-production.up.railway.app`.
     - Removed `isVercel` restrictions and hardcoded error messages that blocked backend features in production.

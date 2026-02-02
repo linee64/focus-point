@@ -122,6 +122,7 @@ export const Review = () => {
                   onChange={(e) => setVideoUrl(e.target.value)}
                   className="w-full bg-[#0B0B0F]/80 border border-white/10 rounded-xl py-2.5 px-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 transition-all"
                 />
+                <p className="text-[15px] text-gray-500 mt-1.5 ml-1">Демо-режим: до 10-15 минут</p>
               </div>
             </div>
           </div>
