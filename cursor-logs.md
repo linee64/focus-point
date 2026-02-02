@@ -112,7 +112,10 @@
     - Modified [Procfile](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/Procfile) to use `python -m uvicorn` for better module resolution.
     - Optimized [main.py](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/backend/main.py) to skip Windows-specific OpenMP fixes when running on Linux.
 
-- **Environment Configuration**:
+- **Frontend Integration with Railway**:
+    - Updated `BASE_URL` in [geminiService.ts](file:///c:/Users/алматы2/Desktop/Aidar's main/FocusPoint/src/services/geminiService.ts) to point to the Railway backend: `https://focus-point-production.up.railway.app`.
+    - Removed `isVercel` restrictions and hardcoded error messages that blocked backend features in production.
+    - Switched to dynamic `BASE_URL` logic: uses `localhost:8001` during development and Railway in production.
     - Configured `VITE_GEMINI_API_KEY` in local `.env` and deployment settings for direct Gemini API access from frontend.
     - Verified Supabase credentials integration.
 - **Serverless Architecture (Vercel)**:
