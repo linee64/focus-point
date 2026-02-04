@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { BottomNav } from './BottomNav';
 import { clsx } from 'clsx';
+import { Analytics } from "@vercel/analytics/react"
 
 interface LayoutProps {
   children: ReactNode;
@@ -37,6 +38,7 @@ export const Layout = ({ children }: LayoutProps) => {
         </main>
 
         {!isAIChat && <BottomNav />}
+        <Analytics />
       </div>
     </div>
   );
