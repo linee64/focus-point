@@ -455,3 +455,11 @@
     - Fixed an issue where the "Logout" button on the Profile page was not clickable on mobile devices. This was caused by the bottom navigation bar overlapping the button due to insufficient padding and safe-area considerations.
     - Increased bottom padding (`pb-32`) across all main pages ([Profile.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/Profile.tsx), [Schedule.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/Schedule.tsx), [Tasks.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/Tasks.tsx), [Review.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/pages/Review.tsx)) and the global [Layout.tsx](file:///c:/Users/алматы2/Desktop/Aidar's%20main/FocusPoint/src/components/Layout.tsx).
     - Added haptic-like visual feedback (`active:scale-[0.98]`) to the Logout button for a better mobile experience.
+
+## 2026-02-06
+- **Настройка расписания звонков**:
+    - Добавлена возможность настройки длительности уроков и перемен в профиле пользователя.
+    - Обновлен интерфейс `UserSettings` и `useStore` для хранения `schoolTimetable`.
+    - Создан компонент `SchoolTimetableModal.tsx` для удобного редактирования расписания звонков.
+    - Добавлена кнопка "Расписание звонков" в `Profile.tsx` для доступа к новым настройкам.
+    - Реализована возможность добавления/удаления уроков и изменения их параметров (длительность урока и перемены после него).

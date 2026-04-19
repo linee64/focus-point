@@ -23,6 +23,11 @@ export interface ScheduleEvent {
   room?: string; // Room/classroom number
 }
 
+export interface SchoolTimetableItem {
+  duration: number; // in minutes
+  breakAfter: number; // in minutes
+}
+
 export interface UserSettings {
   wakeUpTime: string;
   bedTime: string;
@@ -41,6 +46,7 @@ export interface UserSettings {
   }[];
   group?: string; // User's study group
   grade?: string; // User's school class/grade
+  schoolTimetable?: SchoolTimetableItem[];
 }
 
 export interface Note {

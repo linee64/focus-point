@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { useState, useRef } from 'react';
 import { DailyRoutineModal } from '../components/DailyRoutineModal';
+import { SchoolTimetableModal } from '../components/SchoolTimetableModal';
 import { recognizeScheduleFromImage } from '../services/geminiService';
 import { format, startOfWeek, addDays, parse } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -44,6 +45,7 @@ export const Profile = () => {
   const [grade, setGrade] = useState(settings.grade || '');
   const [isStudyOpen, setIsStudyOpen] = useState(false);
   const [isDailyRoutineOpen, setIsDailyRoutineOpen] = useState(false);
+  const [isSchoolTimetableOpen, setIsSchoolTimetableOpen] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [rating, setRating] = useState(0);
   const [isRecognizing, setIsRecognizing] = useState(false);
@@ -165,6 +167,10 @@ export const Profile = () => {
       <DailyRoutineModal 
         isOpen={isDailyRoutineOpen} 
         onClose={() => setIsDailyRoutineOpen(false)} 
+      />
+      <SchoolTimetableModal 
+        isOpen={isSchoolTimetableOpen} 
+        onClose={() => setIsSchoolTimetableOpen(false)} 
       />
       {/* Header */}
       <header className="flex justify-between items-center pt-2 px-1">
@@ -426,6 +432,23 @@ export const Profile = () => {
                     <div className="font-medium">Режим дня</div>
                     <div className="text-[10px] text-gray-500">
                         {settings.wakeUpTime} - {settings.bedTime} • Дорога: {settings.commuteTime} мин
+                    </div>
+                </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+        </button>
+
+        {/* School Timetable */}
+        <button 
+            onClick={() => setIsSchoolTimetableOpen(true)}
+            className="w-full bg-[#18181B]/50 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex justify-between items-center group transition-colors hover:bg-white/5"
+        >
+            <div className="flex items-center gap-3 text-left">
+                <Clock className="w-5 h-5 text-gray-400" />
+                <div>
+                    <div className="font-medium">Расписание звонков</div>
+                    <div className="text-[10px] text-gray-500">
+                        {settings.schoolTimetable?.length || 0} уроков • Настройка длительности
                     </div>
                 </div>
             </div>
